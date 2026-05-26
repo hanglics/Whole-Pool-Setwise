@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+.cache/
+logs/
+results/
+*.log
+slurm-*.out

@@ -1,0 +1,12 @@
+accelerate
+ir-datasets
+matplotlib
+numpy
+openai==0.27.10
+protobuf
+pyserini
+sentencepiece
+tiktoken
+torch
+tqdm
+transformers

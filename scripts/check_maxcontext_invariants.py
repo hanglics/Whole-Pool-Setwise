@@ -850,6 +850,54 @@ def test_maxcontext_dualend_byte_identity_snapshot():
     assert vars(ranker) == expected_snapshot
 
 
+def test_maxcontext_dualend_allows_query_pools_below_cap():
+    ranker = instantiate_maxcontext_variant(
+        MaxContextDualEndSetwiseLlmRanker,
+        DualEndSetwiseLlmRanker,
+        pool_size=10,
+    )
+    ranker._assert_maxcontext_fits = lambda query, ranking: None
+    calls = {"count": 0}
+
+    def choose_edges(query, window):
+        ranker.total_compare += 1
+        calls["count"] += 1
+        return "1", str(len(window))
+
+    ranker.compare_both = choose_edges
+    docs = make_docs(3)
+    results = ranker.rerank("query", docs)
+    assert calls["count"] == 1
+    assert ranker.total_compare == 1
+    assert_materialized_rerank(results, docs)
+
+    one_doc_ranker = instantiate_maxcontext_variant(
+        MaxContextDualEndSetwiseLlmRanker,
+        DualEndSetwiseLlmRanker,
+        pool_size=10,
+    )
+    one_doc_ranker._assert_maxcontext_fits = lambda *_args: (_ for _ in ()).throw(
+        AssertionError("single-doc MaxContext should not preflight")
+    )
+    one_doc_ranker.compare_both = lambda *_args: (_ for _ in ()).throw(
+        AssertionError("single-doc MaxContext should not call the LLM")
+    )
+    one_doc_results = one_doc_ranker.rerank("query", make_docs(1))
+    assert one_doc_ranker.total_compare == 0
+    assert_materialized_rerank(one_doc_results, make_docs(1))
+
+    capped_ranker = instantiate_maxcontext_variant(
+        MaxContextDualEndSetwiseLlmRanker,
+        DualEndSetwiseLlmRanker,
+        pool_size=2,
+    )
+    expect_raises(
+        lambda: capped_ranker.rerank("query", make_docs(3)),
+        ValueError,
+        "at most pool_size=2",
+    )
+
+
 def test_generation_budget_tier():
     expected = {
         "qwen2": (256, 512),
@@ -1189,6 +1237,53 @@ def test_maxcontext_topdown_invariants():
     assert three_doc_ranker.total_bm25_bypass == 1
     assert_materialized_rerank(three_doc_results, make_docs(3))
 
+    short_pool_ranker = instantiate_maxcontext_variant(
+        MaxContextTopDownSetwiseLlmRanker,
+        SetwiseLlmRanker,
+        pool_size=10,
+    )
+    short_pool_ranker._assert_maxcontext_fits = lambda query, ranking: None
+    short_pool_calls = {"count": 0}
+
+    def choose_first_short_pool(query, window):
+        short_pool_ranker.total_compare += 1
+        short_pool_calls["count"] += 1
+        return "1"
+
+    short_pool_ranker.compare = choose_first_short_pool
+    short_pool_results = short_pool_ranker.rerank("query", make_docs(3))
+    assert short_pool_calls["count"] == 1
+    assert short_pool_ranker.total_compare == 1
+    assert short_pool_ranker.total_bm25_bypass == 1
+    assert_materialized_rerank(short_pool_results, make_docs(3))
+
+    one_doc_below_cap_ranker = instantiate_maxcontext_variant(
+        MaxContextTopDownSetwiseLlmRanker,
+        SetwiseLlmRanker,
+        pool_size=10,
+    )
+    one_doc_below_cap_ranker._assert_maxcontext_fits = lambda *_args: (_ for _ in ()).throw(
+        AssertionError("single-doc MaxContext should not preflight")
+    )
+    one_doc_below_cap_ranker.compare = lambda *_args: (_ for _ in ()).throw(
+        AssertionError("single-doc MaxContext should not call the LLM")
+    )
+    one_doc_below_cap_results = one_doc_below_cap_ranker.rerank("query", make_docs(1))
+    assert one_doc_below_cap_ranker.total_compare == 0
+    assert one_doc_below_cap_ranker.total_bm25_bypass == 0
+    assert_materialized_rerank(one_doc_below_cap_results, make_docs(1))
+
+    capped_ranker = instantiate_maxcontext_variant(
+        MaxContextTopDownSetwiseLlmRanker,
+        SetwiseLlmRanker,
+        pool_size=2,
+    )
+    expect_raises(
+        lambda: capped_ranker.rerank("query", make_docs(3)),
+        ValueError,
+        "at most pool_size=2",
+    )
+
     bad_score_ranker = instantiate_maxcontext_variant(
         MaxContextTopDownSetwiseLlmRanker,
         SetwiseLlmRanker,
@@ -1383,6 +1478,53 @@ def test_maxcontext_bottomup_invariants():
     assert three_doc_ranker.total_compare == 1
     assert three_doc_ranker.total_bm25_bypass == 1
     assert_materialized_rerank(three_doc_results, make_docs(3))
+
+    short_pool_ranker = instantiate_maxcontext_variant(
+        MaxContextBottomUpSetwiseLlmRanker,
+        BottomUpSetwiseLlmRanker,
+        pool_size=10,
+    )
+    short_pool_ranker._assert_maxcontext_fits = lambda query, ranking: None
+    short_pool_calls = {"count": 0}
+
+    def choose_first_short_pool(query, window):
+        short_pool_ranker.total_compare += 1
+        short_pool_calls["count"] += 1
+        return "1"
+
+    short_pool_ranker.compare_worst = choose_first_short_pool
+    short_pool_results = short_pool_ranker.rerank("query", make_docs(3))
+    assert short_pool_calls["count"] == 1
+    assert short_pool_ranker.total_compare == 1
+    assert short_pool_ranker.total_bm25_bypass == 1
+    assert_materialized_rerank(short_pool_results, make_docs(3))
+
+    one_doc_below_cap_ranker = instantiate_maxcontext_variant(
+        MaxContextBottomUpSetwiseLlmRanker,
+        BottomUpSetwiseLlmRanker,
+        pool_size=10,
+    )
+    one_doc_below_cap_ranker._assert_maxcontext_fits = lambda *_args: (_ for _ in ()).throw(
+        AssertionError("single-doc MaxContext should not preflight")
+    )
+    one_doc_below_cap_ranker.compare_worst = lambda *_args: (_ for _ in ()).throw(
+        AssertionError("single-doc MaxContext should not call the LLM")
+    )
+    one_doc_below_cap_results = one_doc_below_cap_ranker.rerank("query", make_docs(1))
+    assert one_doc_below_cap_ranker.total_compare == 0
+    assert one_doc_below_cap_ranker.total_bm25_bypass == 0
+    assert_materialized_rerank(one_doc_below_cap_results, make_docs(1))
+
+    capped_ranker = instantiate_maxcontext_variant(
+        MaxContextBottomUpSetwiseLlmRanker,
+        BottomUpSetwiseLlmRanker,
+        pool_size=2,
+    )
+    expect_raises(
+        lambda: capped_ranker.rerank("query", make_docs(3)),
+        ValueError,
+        "at most pool_size=2",
+    )
 
     strict_ranker = instantiate_maxcontext_variant(
         MaxContextBottomUpSetwiseLlmRanker,
@@ -3022,6 +3164,7 @@ def main():
     test_parse_failure_retry_budget_invariants()
     test_lenient_fallback_counter_invariants()
     test_maxcontext_dualend_byte_identity_snapshot()
+    test_maxcontext_dualend_allows_query_pools_below_cap()
     test_generation_budget_tier()
     test_chat_template_kwargs_per_family()
     test_trust_remote_code_per_family()

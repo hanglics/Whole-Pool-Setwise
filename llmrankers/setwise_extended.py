@@ -85,6 +85,42 @@ def _maxcontext_should_fallback_to_bm25(ranker, exc: BaseException) -> bool:
     )
 
 
+def _reset_maxcontext_query_stats(ranker) -> None:
+    """Reset per-query counters before MaxContext early returns/fallbacks."""
+    ranker.total_compare = 0
+    ranker.total_completion_tokens = 0
+    ranker.total_prompt_tokens = 0
+    ranker.total_retries = 0
+    ranker.total_retry_overhead_seconds = 0.0
+    ranker.total_parse_fallback = 0
+    ranker.total_lexical_refusal_fallback = 0
+    ranker.total_numeric_out_of_range_fallback = 0
+    ranker.total_degenerate_repetition_fallback = 0
+    ranker.total_unparseable_after_exhaustion_fallback = 0
+    ranker.total_duplicate_label_fallback = 0
+    ranker.total_lenient_fallback = 0
+    ranker.total_strict_parse_fallback = 0
+    ranker.total_parse_failure_strict = 0
+    ranker.total_parse_failure_bm25_fallback = 0
+    if hasattr(ranker, "total_bm25_bypass"):
+        ranker.total_bm25_bypass = 0
+
+
+def _validate_maxcontext_pool_size(ranker, docs: List[SearchResult], name: str) -> None:
+    max_docs = getattr(ranker, "_maxcontext_pool_size", None)
+    if max_docs is not None and len(docs) > max_docs:
+        raise ValueError(
+            f"{name} expects at most pool_size={max_docs} input docs; got {len(docs)}."
+        )
+
+
+def _materialize_maxcontext_results(docs: Sequence[SearchResult]) -> List[SearchResult]:
+    return [
+        SearchResult(docid=doc.docid, score=-rank, text=None)
+        for rank, doc in enumerate(docs, start=1)
+    ]
+
+
 def _resolve_maxcontext_label_index(
     ranker, label: str, window_len: int, default: int
 ) -> int:
@@ -1561,16 +1597,13 @@ class MaxContextDualEndSetwiseLlmRanker(_MaxContextOrderingMixin, DualEndSetwise
             )
 
     def rerank(self, query: str, docs: List[SearchResult]) -> List[SearchResult]:
-        self.total_retries = 0
-        self.total_retry_overhead_seconds = 0.0
+        _reset_maxcontext_query_stats(self)
         self._maxcontext_original_positions = {
             doc.docid: i for i, doc in enumerate(docs)
         }
-        if len(docs) != self._maxcontext_pool_size:
-            raise ValueError(
-                f"MaxContextDualEnd expects exactly pool_size="
-                f"{self._maxcontext_pool_size} input docs; got {len(docs)}."
-            )
+        _validate_maxcontext_pool_size(self, docs, "MaxContextDualEnd")
+        if len(docs) <= 1:
+            return _materialize_maxcontext_results(docs)
         self._assert_maxcontext_fits(query, docs)
         self.total_parse_fallback = 0
         self.total_lexical_refusal_fallback = 0
@@ -2283,13 +2316,13 @@ class MaxContextTopDownSetwiseLlmRanker(_MaxContextOrderingMixin, SetwiseLlmRank
         return ranking
 
     def rerank(self, query: str, docs: List[SearchResult]) -> List[SearchResult]:
-        self.total_retries = 0
-        self.total_retry_overhead_seconds = 0.0
-        if len(docs) != self._maxcontext_pool_size:
-            raise ValueError(
-                f"MaxContextTopDown expects exactly pool_size="
-                f"{self._maxcontext_pool_size} input docs; got {len(docs)}."
-            )
+        _reset_maxcontext_query_stats(self)
+        self._maxcontext_original_positions = {
+            doc.docid: i for i, doc in enumerate(docs)
+        }
+        _validate_maxcontext_pool_size(self, docs, "MaxContextTopDown")
+        if len(docs) <= 1:
+            return _materialize_maxcontext_results(docs)
         self._assert_maxcontext_fits(query, docs)
         try:
             ordered = self._maxcontext_topdown_select(query, docs)
@@ -2413,13 +2446,13 @@ class MaxContextBottomUpSetwiseLlmRanker(_MaxContextOrderingMixin, BottomUpSetwi
         return ranking
 
     def rerank(self, query: str, docs: List[SearchResult]) -> List[SearchResult]:
-        self.total_retries = 0
-        self.total_retry_overhead_seconds = 0.0
-        if len(docs) != self._maxcontext_pool_size:
-            raise ValueError(
-                f"MaxContextBottomUp expects exactly pool_size="
-                f"{self._maxcontext_pool_size} input docs; got {len(docs)}."
-            )
+        _reset_maxcontext_query_stats(self)
+        self._maxcontext_original_positions = {
+            doc.docid: i for i, doc in enumerate(docs)
+        }
+        _validate_maxcontext_pool_size(self, docs, "MaxContextBottomUp")
+        if len(docs) <= 1:
+            return _materialize_maxcontext_results(docs)
         self._assert_maxcontext_fits(query, docs)
         try:
             ordered = self._maxcontext_bottomup_select(query, docs)

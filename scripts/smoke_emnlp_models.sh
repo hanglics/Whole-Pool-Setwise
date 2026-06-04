@@ -57,6 +57,7 @@ METHODS=(
 )
 
 SMOKE_POOLS=(50 100)
+SMOKE_BM25_RUN="runs/bm25/run.msmarco-v1-passage.bm25-default.dl19.txt"
 # dl19 has 43 judged queries; this script is dl19-only per Phase A.
 N_QUERIES=43
 
@@ -74,35 +75,56 @@ verify_cell() {
   local txt="${dir}/${method}.txt"
   local eval_file="${dir}/${method}.eval"
   local log="${dir}/${method}.log"
-  local expected_lines=$((N_QUERIES * pool_size))
 
   [[ -f "$txt" ]] || { echo "[FAIL] missing ${txt}" >&2; return 1; }
   [[ -f "$eval_file" ]] || { echo "[FAIL] missing ${eval_file}" >&2; return 1; }
   [[ -f "$log" ]] || { echo "[FAIL] missing ${log}" >&2; return 1; }
+  [[ -f "$SMOKE_BM25_RUN" ]] || { echo "[FAIL] missing ${SMOKE_BM25_RUN}" >&2; return 1; }
 
-  local lines
-  lines="$(wc -l < "$txt" | tr -d ' ')"
-  [[ "$lines" == "$expected_lines" ]] || { echo "[FAIL] ${txt}: expected ${expected_lines} lines, got ${lines}" >&2; return 1; }
-
-  python3 - "$txt" "$eval_file" "$N_QUERIES" <<'PY'
+  python3 - "$txt" "$eval_file" "$SMOKE_BM25_RUN" "$N_QUERIES" "$pool_size" <<'PY'
 import sys
 from collections import defaultdict
-run_path, eval_path, expected_qids_raw = sys.argv[1:]
+run_path, eval_path, bm25_path, expected_qids_raw, pool_size_raw = sys.argv[1:]
 expected_qids = int(expected_qids_raw)
+pool_size = int(pool_size_raw)
+
+expected_counts = defaultdict(int)
+with open(bm25_path) as handle:
+    for line in handle:
+        parts = line.split()
+        if len(parts) < 3:
+            raise SystemExit(f"bad BM25 line: {line!r}")
+        qid = parts[0]
+        if expected_counts[qid] < pool_size:
+            expected_counts[qid] += 1
+if len(expected_counts) != expected_qids:
+    raise SystemExit(f"expected {expected_qids} qids in BM25 run, got {len(expected_counts)}")
+
 top_docs = defaultdict(list)
+observed_counts = defaultdict(int)
 with open(run_path) as handle:
     for line in handle:
         parts = line.split()
         if len(parts) < 4:
             raise SystemExit(f"bad run line: {line!r}")
         qid, docid, rank = parts[0], parts[2], int(parts[3])
+        observed_counts[qid] += 1
         if rank <= 10:
             top_docs[qid].append(docid)
-if len(top_docs) != expected_qids:
-    raise SystemExit(f"expected {expected_qids} qids, got {len(top_docs)}")
-for qid, docs in top_docs.items():
-    if len(docs) != 10 or len(set(docs)) != 10:
-        raise SystemExit(f"qid {qid} top10 is not 10 distinct docids")
+if set(observed_counts) != set(expected_counts):
+    missing = sorted(set(expected_counts) - set(observed_counts))
+    extra = sorted(set(observed_counts) - set(expected_counts))
+    raise SystemExit(f"qid mismatch; missing={missing[:5]} extra={extra[:5]}")
+for qid, expected_count in expected_counts.items():
+    observed_count = observed_counts[qid]
+    if observed_count != expected_count:
+        raise SystemExit(
+            f"qid {qid}: expected {expected_count} run rows for pool {pool_size}, got {observed_count}"
+        )
+    expected_top = min(10, expected_count)
+    docs = top_docs[qid]
+    if len(docs) != expected_top or len(set(docs)) != expected_top:
+        raise SystemExit(f"qid {qid} top{expected_top} is not {expected_top} distinct docids")
 ndcg = None
 with open(eval_path) as handle:
     for line in handle:

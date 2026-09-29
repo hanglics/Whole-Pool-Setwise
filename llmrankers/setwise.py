@@ -1,10 +1,14 @@
 from typing import List, NamedTuple, Optional, Sequence
 from .rankers import LlmRanker, SearchResult
-import openai
+try:
+    import openai
+except ImportError:
+    openai = None
 import os
 import time
 import re
 import math
+import hashlib
 from transformers import (
     T5Tokenizer,
     T5ForConditionalGeneration,
@@ -18,7 +22,10 @@ from ._processor_adapter import ProcessorTokenizerAdapter
 import torch
 import copy
 from collections import Counter
-import tiktoken
+try:
+    import tiktoken
+except ImportError:
+    tiktoken = None
 import random
 
 _DEBUG = os.environ.get("LLM_RANKER_DEBUG", "").lower() in ("1", "true", "yes")
@@ -158,13 +165,18 @@ class SetwiseLlmRanker(LlmRanker):
                  character_scheme: str = "letters_a_w",
                  method="heapsort",
                  num_permutation=1,
-                 cache_dir=None):
+                 cache_dir=None,
+                 model_revision=None,
+                 tokenizer_revision=None):
 
         self.device = device
         self.num_child = num_child
         self.num_permutation = num_permutation
         self.k = k
+        self.model_revision = model_revision
+        self.tokenizer_revision = tokenizer_revision or model_revision
         self.config = AutoConfig.from_pretrained(model_name_or_path, cache_dir=cache_dir,
+                                                   revision=self.model_revision,
                                                    trust_remote_code=True)
         self.scoring = scoring
         self._apply_character_scheme(character_scheme)
@@ -180,6 +192,8 @@ class SetwiseLlmRanker(LlmRanker):
         self.total_compare = 0
         self.total_completion_tokens = 0
         self.total_prompt_tokens = 0
+        self.total_retry_prompt_tokens = 0
+        self.total_retry_completion_tokens = 0
         self.total_retries = 0
         self.total_retry_overhead_seconds = 0.0
         self.total_parse_fallback = 0
@@ -191,6 +205,8 @@ class SetwiseLlmRanker(LlmRanker):
         self.total_duplicate_label_fallback = 0
         self.total_lenient_fallback = 0
         self.total_strict_parse_fallback = 0
+        self.capture_raw_responses = False
+        self.rendered_prompt_hashes = []
         self.max_input_tokens = self._resolve_max_input_tokens()
 
     def _parse_failure_retry_budget(self) -> int:
@@ -237,6 +253,18 @@ class SetwiseLlmRanker(LlmRanker):
         )
 
     def _restore_retry_invisible_counters(self, snapshot: _RetryCounterSnapshot) -> None:
+        # The failed generation is invisible to the nominal algorithm counters,
+        # but it is real inference work and must remain visible to experiment cost
+        # accounting before the snapshot is restored.
+        self.total_retry_prompt_tokens = getattr(self, "total_retry_prompt_tokens", 0) + max(
+            0, getattr(self, "total_prompt_tokens", 0) - snapshot.total_prompt_tokens
+        )
+        self.total_retry_completion_tokens = getattr(
+            self, "total_retry_completion_tokens", 0
+        ) + max(
+            0,
+            getattr(self, "total_completion_tokens", 0) - snapshot.total_completion_tokens,
+        )
         self.total_compare = snapshot.total_compare
         self.total_prompt_tokens = snapshot.total_prompt_tokens
         self.total_completion_tokens = snapshot.total_completion_tokens
@@ -324,6 +352,28 @@ class SetwiseLlmRanker(LlmRanker):
         decorated.sort(key=lambda item: (item[1], -item[2]), reverse=True)
         return [doc for doc, _, _ in decorated]
 
+    def _materialize_ranking(
+        self,
+        ranking: List[SearchResult],
+        original_ranking: Optional[List[SearchResult]] = None,
+    ) -> List[SearchResult]:
+        """Return a TREC-style materialized ranking without further LLM calls."""
+        if original_ranking is None:
+            original_ranking = ranking
+
+        results = []
+        top_doc_ids = set()
+        rank = 1
+        for doc in ranking[:self.k]:
+            top_doc_ids.add(doc.docid)
+            results.append(SearchResult(docid=doc.docid, score=-rank, text=None))
+            rank += 1
+        for doc in original_ranking:
+            if doc.docid not in top_doc_ids:
+                results.append(SearchResult(docid=doc.docid, score=-rank, text=None))
+                rank += 1
+        return results
+
     def _load_model_and_tokenizer(self, model_name_or_path, tokenizer_name_or_path, device, cache_dir):
         if self.config.model_type == 't5':
             self._load_t5(model_name_or_path, tokenizer_name_or_path, device, cache_dir)
@@ -339,12 +389,14 @@ class SetwiseLlmRanker(LlmRanker):
         self.tokenizer = T5Tokenizer.from_pretrained(tokenizer_name_or_path
                                                      if tokenizer_name_or_path is not None else
                                                      model_name_or_path,
-                                                     cache_dir=cache_dir)
+                                                     cache_dir=cache_dir,
+                                                     revision=self.tokenizer_revision)
         self.llm = T5ForConditionalGeneration.from_pretrained(model_name_or_path,
                                                               device_map='auto',
                                                               torch_dtype=torch.float16 if device == 'cuda'
                                                               else torch.float32,
-                                                              cache_dir=cache_dir)
+                                                              cache_dir=cache_dir,
+                                                              revision=self.model_revision)
         self.decoder_input_ids = self.tokenizer.encode("<pad> Passage",
                                                        return_tensors="pt",
                                                        add_special_tokens=False).to(self.device) if self.tokenizer else None
@@ -360,11 +412,12 @@ class SetwiseLlmRanker(LlmRanker):
 
     def _load_causal(self, model_name_or_path, tokenizer_name_or_path, device, cache_dir):
         self._is_multimodal = False
-        tokenizer_kwargs = {"cache_dir": cache_dir}
+        tokenizer_kwargs = {"cache_dir": cache_dir, "revision": self.tokenizer_revision}
         model_kwargs = {
             "device_map": "auto",
             "torch_dtype": "auto" if device == "cuda" else torch.float32,
             "cache_dir": cache_dir,
+            "revision": self.model_revision,
         }
         if self.config.model_type in TRUST_REMOTE_CODE_MODEL_TYPES:
             tokenizer_kwargs["trust_remote_code"] = True
@@ -383,7 +436,11 @@ class SetwiseLlmRanker(LlmRanker):
         ).eval()
 
     def _load_multimodal(self, model_name_or_path, tokenizer_name_or_path, device, cache_dir):
-        processor_kwargs = {"cache_dir": cache_dir, "trust_remote_code": True}
+        processor_kwargs = {
+            "cache_dir": cache_dir,
+            "trust_remote_code": True,
+            "revision": self.tokenizer_revision,
+        }
         self.processor = AutoProcessor.from_pretrained(
             tokenizer_name_or_path or model_name_or_path,
             **processor_kwargs,
@@ -396,6 +453,7 @@ class SetwiseLlmRanker(LlmRanker):
         self.llm = AutoModelForImageTextToText.from_pretrained(
             model_name_or_path,
             cache_dir=cache_dir,
+            revision=self.model_revision,
             device_map="auto",
             torch_dtype="auto" if device == "cuda" else torch.float32,
             trust_remote_code=True,
@@ -445,7 +503,8 @@ class SetwiseLlmRanker(LlmRanker):
                         docs: list = None,
                         parse_status: str = None,
                         parse_fallback_reason: str = None,
-                        raw_output: str = None):
+                        raw_output: str = None,
+                        raw_attempts: list = None):
         """Log a comparison for position bias analysis."""
         log_path = getattr(self, '_comparison_log_path', None)
         if not log_path:
@@ -468,6 +527,8 @@ class SetwiseLlmRanker(LlmRanker):
             entry["parse_fallback_reason"] = parse_fallback_reason
         if raw_output is not None:
             entry["raw_output"] = raw_output
+        if raw_attempts is not None:
+            entry["raw_attempts"] = raw_attempts
         with open(log_path, 'a') as f:
             f.write(_json.dumps(entry) + "\n")
 
@@ -646,6 +707,13 @@ class SetwiseLlmRanker(LlmRanker):
         return prefix_len
 
     def _tokenize_inputs(self, inputs, padding=False):
+        prompt_texts = [inputs] if isinstance(inputs, str) else list(inputs)
+        if not hasattr(self, "rendered_prompt_hashes"):
+            self.rendered_prompt_hashes = []
+        self.rendered_prompt_hashes.extend(
+            hashlib.sha256(str(prompt).encode("utf-8")).hexdigest()
+            for prompt in prompt_texts
+        )
         raw = self.tokenizer(inputs, add_special_tokens=True, return_attention_mask=True)
         raw_ids = raw["input_ids"]
         if raw_ids and isinstance(raw_ids[0], int):
@@ -767,7 +835,13 @@ class SetwiseLlmRanker(LlmRanker):
             f"Likelihood scoring is not implemented for model type {self.config.model_type}."
         )
 
-    def _generate(self, model_inputs, max_new_tokens, decoder_input_ids=None):
+    def _generate(
+        self,
+        model_inputs,
+        max_new_tokens,
+        decoder_input_ids=None,
+        min_new_tokens=None,
+    ):
         kwargs = {
             "input_ids": model_inputs.input_ids,
             "attention_mask": model_inputs.attention_mask,
@@ -775,6 +849,8 @@ class SetwiseLlmRanker(LlmRanker):
         }
         if decoder_input_ids is not None:
             kwargs["decoder_input_ids"] = decoder_input_ids
+        if min_new_tokens is not None:
+            kwargs["min_new_tokens"] = min_new_tokens
         if self._uses_causal_style_generation():
             if self._is_multimodal_model():
                 # Multimodal models (e.g. Mistral 3) ship a 256K `max_length` in
@@ -1214,6 +1290,8 @@ class SetwiseLlmRanker(LlmRanker):
         self.total_compare += 1 if self.num_permutation == 1 else self.num_permutation
         parse_status = "parsed"
         parse_fallback_reason = None
+        comparison_raw_output = None
+        comparison_raw_attempts = []
 
         input_text = self._build_best_prompt(query, docs)
 
@@ -1234,6 +1312,16 @@ class SetwiseLlmRanker(LlmRanker):
 
                     raw_output = self.tokenizer.decode(output_ids,
                                                        skip_special_tokens=True).strip()
+                    if getattr(self, "capture_raw_responses", False):
+                        comparison_raw_output = raw_output
+                        comparison_raw_attempts.append(
+                            {
+                                "attempt_index": 0,
+                                "raw_output": raw_output,
+                                "prompt_tokens": int(inputs.input_ids.shape[1]),
+                                "completion_tokens": int(output_ids.shape[0]),
+                            }
+                        )
                     output = self._parse_single_label(raw_output, self.CHARACTERS[:len(docs)])
                     if output is None:
                         output = self._clean_generation_output(raw_output).upper()
@@ -1308,7 +1396,7 @@ class SetwiseLlmRanker(LlmRanker):
                 attempt = 0
                 while True:
                     snapshot = self._snapshot_retry_invisible_counters()
-                    retry_start = time.perf_counter() if attempt > 0 else None
+                    attempt_start = time.perf_counter()
 
                     inputs = self._tokenize_inputs(prompt)
                     self.total_prompt_tokens += inputs.input_ids.shape[1]
@@ -1327,8 +1415,20 @@ class SetwiseLlmRanker(LlmRanker):
                     # the thinking *content* leaks through and pollutes parsing.
                     raw_output = self.tokenizer.decode(output_ids[inputs.input_ids.shape[1]:],
                                                        skip_special_tokens=False).strip()
-                    if retry_start is not None:
-                        self._record_parse_failure_retry(retry_start)
+                    if getattr(self, "capture_raw_responses", False):
+                        comparison_raw_output = raw_output
+                        comparison_raw_attempts.append(
+                            {
+                                "attempt_index": attempt,
+                                "raw_output": raw_output,
+                                "prompt_tokens": int(
+                                    self.total_prompt_tokens - snapshot.total_prompt_tokens
+                                ),
+                                "completion_tokens": int(
+                                    self.total_completion_tokens - snapshot.total_completion_tokens
+                                ),
+                            }
+                        )
                     if _DEBUG:
                         cleaned_dbg = self._clean_generation_output(raw_output)
                         print(f"[DEBUG] raw={repr(raw_output[:200])}  cleaned={repr(cleaned_dbg[:200])}")
@@ -1351,6 +1451,7 @@ class SetwiseLlmRanker(LlmRanker):
 
                     reason = self._classify_numeric_noop(raw_output, len(docs))
                     if reason is None and attempt < retry_budget:
+                        self._record_parse_failure_retry(attempt_start)
                         self._restore_retry_invisible_counters(snapshot)
                         attempt += 1
                         continue
@@ -1409,10 +1510,28 @@ class SetwiseLlmRanker(LlmRanker):
             output = ranked[0][0]
 
         if output in self.CHARACTERS[:len(docs)]:
+            if comparison_raw_attempts:
+                for raw_attempt in comparison_raw_attempts[:-1]:
+                    raw_attempt.update(
+                        {
+                            "accepted": False,
+                            "parse_result": None,
+                            "parse_reason": "retry_parse_failure",
+                        }
+                    )
+                comparison_raw_attempts[-1].update(
+                    {
+                        "accepted": parse_status == "parsed",
+                        "parse_result": output if parse_status == "parsed" else None,
+                        "parse_reason": None if parse_status == "parsed" else parse_fallback_reason,
+                    }
+                )
             self._log_comparison(
                 "best", self.CHARACTERS[:len(docs)], output, docs,
                 parse_status=parse_status,
                 parse_fallback_reason=parse_fallback_reason,
+                raw_output=comparison_raw_output,
+                raw_attempts=comparison_raw_attempts if getattr(self, "capture_raw_responses", False) else None,
             )
         else:
             print(f"Unexpected output: {output}")
@@ -1458,6 +1577,9 @@ class SetwiseLlmRanker(LlmRanker):
         self.total_compare = 0
         self.total_completion_tokens = 0
         self.total_prompt_tokens = 0
+        self.total_retry_prompt_tokens = 0
+        self.total_retry_completion_tokens = 0
+        self.rendered_prompt_hashes = []
         self.total_retries = 0
         self.total_retry_overhead_seconds = 0.0
         self.total_parse_fallback = 0
@@ -1468,6 +1590,9 @@ class SetwiseLlmRanker(LlmRanker):
         self.total_unparseable_after_exhaustion_fallback = 0
         self.total_duplicate_label_fallback = 0
         self.total_lenient_fallback = 0
+
+        if len(ranking) <= 1:
+            return self._materialize_ranking(ranking, original_ranking)
         
         if self.method == "heapsort":
             self.heapSort(ranking, query, self.k)
@@ -1566,6 +1691,11 @@ class SetwiseLlmRanker(LlmRanker):
 
 class OpenAiSetwiseLlmRanker(SetwiseLlmRanker):
     def __init__(self, model_name_or_path, api_key, num_child=3, method='heapsort', k=10):
+        if openai is None or tiktoken is None:
+            raise ImportError(
+                "The legacy OpenAiSetwiseLlmRanker requires the optional "
+                "openai and tiktoken packages."
+            )
         self.llm = model_name_or_path
         self.tokenizer = tiktoken.encoding_for_model(model_name_or_path)
         self.num_child = num_child

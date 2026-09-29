@@ -1,21 +1,23 @@
 # Whole-Pool Setwise Re-ranking
 
-This repository contains the cleaned code and scripts needed to reproduce the completed TREC DL experiments for Whole-Pool Setwise re-ranking. It includes the core ranker implementation, SLURM launchers, evaluation scripts, analysis scripts, smoke tests, and the BM25 first-stage runs used for DL19 and DL20.
+Code, experiment scripts, and detailed results for Whole-Pool Setwise re-ranking on TREC DL and BEIR, including model-matched TourRank and Liu baselines.
 
-**[Browse the detailed results and high-resolution appendix tables](docs/detailed-results.md)** for the existing TREC DL result summaries, per-model results, cost measurements, repeatability, and position-bias controls.
+**[Detailed results and high-resolution tables](docs/detailed-results.md)** · **[Reproduce the paper](docs/reproducing-paper.md)**
 
 It intentionally excludes paper drafts, planning/design notes, raw generated run outputs, logs, caches, conda environments, and local cluster paths. Curated appendix table images and their export manifest are included under `docs/assets/appendix-tables/`.
 
-## Completed Experiment Scope
+## Experiment Scope
 
-The completed reproducibility scope is:
+The paper experiments are:
 
 - Smoke gate: 3 representative models, 7 methods, DL19, pools 50 and 100.
 - Main DL matrix: 9 models, 7 methods, DL19 and DL20, pools 10, 20, 30, 40, 50, and 100.
 - Stability: 3 representative models, DL19, pool 100, 3 whole-pool methods, 5 repeated runs.
 - Position-bias controls: the same 3 representative models and 3 whole-pool methods on DL19 pool 100 under reverse and fixed-seed shuffle conditions.
 
-BEIR and optional Qwen3-only experiments are not included here because they were not part of the completed release scope.
+- BEIR: 9 models, 6 datasets, WP-T and WP-DE, candidate cap 100 (108 runs).
+- Baselines: TourRank-2 and Liu zero-shot, 3 models, DL19/DL20 (12 runs).
+- Matched output depth: WP-T/WP-DE top-10, the same 3 models and datasets (12 runs).
 
 ## Methods
 
@@ -33,7 +35,7 @@ The method names used by the scripts are:
 
 ## Setup
 
-Create an environment with a recent PyTorch/Transformers stack. The Qwen3.5 and Ministral 3 checkpoints require a Transformers version that recognizes their model configs.
+Create an environment with a compatible PyTorch/Transformers stack; the [reproduction guide](docs/reproducing-paper.md#environment) lists the tested versions. The Qwen3.5 and Ministral 3 checkpoints require a Transformers version that recognizes their model configs.
 
 ```bash
 conda create -n wps python=3.10 -y
@@ -69,7 +71,9 @@ No tokens or credentials should be stored in this directory.
 
 ## Data Inputs
 
-The DL19 and DL20 BM25 first-stage runs are included:
+The DL19/DL20 and six BEIR BM25 first-stage runs are included. BEIR inputs have [recorded checksums](docs/data/beir/inputs.sha256).
+
+DL inputs:
 
 ```text
 runs/bm25/run.msmarco-v1-passage.bm25-default.dl19.txt

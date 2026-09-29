@@ -165,7 +165,11 @@ for N in "${POOL_SIZES[@]}"; do
       NDCG_CUTOFFS+="$cutoff"
     fi
   done
-  EVAL_CMD="python -m pyserini.eval.trec_eval -q -l ${LEVEL} -m ndcg_cut.${NDCG_CUTOFFS} ${QRELS} ${RESULT}"
+  METRIC_ARGS=(-m "ndcg_cut.${NDCG_CUTOFFS}")
+  if [[ "$DATASET_TAG" == beir-* ]]; then
+    METRIC_ARGS+=(-m map_cut.100)
+  fi
+  EVAL_CMD="python -m pyserini.eval.trec_eval -q -l ${LEVEL} ${METRIC_ARGS[*]} ${QRELS} ${RESULT}"
 
   if [[ "$DRY_RUN" -eq 1 ]]; then
     echo "$EVAL_CMD"
@@ -186,7 +190,7 @@ for N in "${POOL_SIZES[@]}"; do
   fi
 
   if OUTPUT="$(python -m pyserini.eval.trec_eval -q -l "$LEVEL" \
-                -m "ndcg_cut.${NDCG_CUTOFFS}" \
+                "${METRIC_ARGS[@]}" \
                 "$QRELS" "$RESULT" 2>&1)"; then
     BODY="$(extract_eval_body "$OUTPUT")"
     if [[ -z "$BODY" ]]; then

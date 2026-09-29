@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "upstreams": {
+    "tourrank": {
+      "repository": "https://github.com/chenyiqun/TourRank",
+      "commit": "bab7db3510eb9a0b7c78112ce7fe002a36144ea8",
+      "license": null,
+      "files": {
+        "TourRank_multiprocessing.py": "d46d5dcb107de9773e31df668dc3b618441f4856b25ba63aaebfe0e63b1febec",
+        "data/bm25_dl19_top100.jsonl": "a7fe4b58406bdfe7f8b782cdb81f90c9af5c1b20cf3cd32f28986a801b288ddd",
+        "data/bm25_dl20_top100.jsonl": "8eef26acf208f3a710c150e1cbe7d98ed757990f6b9d5f7a4ba77ddb7a9fa91b"
+      }
+    },
+    "liu_fullrank": {
+      "repository": "https://github.com/RUC-NLPIR/fullrank",
+      "commit": "5e74c7906d7f15c31bfc10c44c4a028318d0ebe7",
+      "license": "MIT",
+      "files": {
+        "LICENSE": "a017b6da0710c1636ef6aad61e97586f962987743eca706b9097faad400517bb",
+        "config.py": "2493c4c397fd60241ee6d086d1c353d40b6bd30a0f3c86a78496c4fd763d339c",
+        "data.py": "e66165551b5941eaf44990228d6388e7f1702b6475143331d7622542f7f8ac95",
+        "index_and_topics.py": "849d329fd7718c15ddeba88cc032ae5192762a024eb394850ab136218416c52f",
+        "rerank/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "rerank/rank_listwise_os_llm.py": "4b3938cf198fe9d02093c8560d240b69ddcb76d586ee4bdfd413e28184e26053",
+        "rerank/rankllm.py": "131abf823beb250f1d713e99a129e7fac7cdb47de204686cfa68acdf65672f0c",
+        "rerank/reranker.py": "5330889151ba0d3777ef1466693450d324a063e3e3c61389e2cc5662ec3a4ced",
+        "runs/dl19/bm25_top100.txt": "e7e32db000649370c08304b3f0fffe0f0b73af08762364f7c6342e17465561fa",
+        "runs/dl20/bm25_top100.txt": "83797a0db7d6d4701d87b26347d79a822287513bfd0945dfe4a089c9cc919a19",
+        "run_rank_llm.py": "c3324adb6dba71afc9c94d34f86e7f978d9bbd9d4971da300516e5e3a6a1296b",
+        "run_rank_llm.sh": "5050cd3cc8e3de165c65261f7aa59173b7d3324d8a8fa5dc8c3ac0456f5f3e3b",
+        "utils.py": "d4b76cdc11d96d879ad7160f294a3fe7eb627710c1c0a4d70048ccaa740f29fc"
+      }
+    }
+  }
+}

@@ -842,6 +842,8 @@ def test_maxcontext_dualend_byte_identity_snapshot():
         "total_retries": 0,
         "total_retry_overhead_seconds": 0.0,
         "_allow_parse_failure_bm25_fallback": False,
+        "output_depth": 10,
+        "capture_raw_responses": False,
         "label_scheme": "numeric_1_based",
         "_maxcontext_pool_size": 10,
         "shuffle": False,
@@ -2318,9 +2320,9 @@ def test_maxcontext_parse_failure_retry_overhead_timing():
     bad = "unparseable output with no label"
     ranker = build_maxcontext_numeric_compare_stub([bad, bad, "7"], pool_size=50)
 
-    # Initial attempt is regular query time and does not call perf_counter().
-    # Retry 1: 0.2 - 0.0 = 0.2s. Retry 2: 0.5 - 0.2 = 0.3s.
-    clock = iter([0.0, 0.2, 0.2, 0.5])
+    # Charge the two discarded attempts; the accepted attempt is nominal work.
+    # Failed attempt 1: 0.2s; failed attempt 2: 0.3s.
+    clock = iter([0.0, 0.2, 0.2, 0.5, 1.0])
     with mock.patch("llmrankers.setwise.time.perf_counter", side_effect=lambda: next(clock)):
         assert ranker.compare("query", make_docs(50)) == "7"
 
@@ -3158,7 +3160,65 @@ def test_topdown_bigram_scheme_invariants():
         assert compare_ranker.total_out_of_window_label_fallback == 0
 
 
+def test_checkpointed_short_pool_raw_capture_and_resume():
+    """Zero-call queries remain auditable and resume preserves measured costs."""
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        first_stage = root / "input.txt"
+        first_stage.write_text("q1 Q0 d1 1 1.0 BM25\n")
+        args = make_run_args(direction="maxcontext_topdown", hits=10, k=10, method="selection")
+        args.run.ir_dataset_name = "test/dataset"
+        args.run.run_path = str(first_stage)
+        args.run.save_path = str(root / "output.txt")
+        args.run.log_comparisons = str(root / "comparisons.jsonl")
+        args.run.checkpoint_dir = str(root / "checkpoints")
+        args.run.telemetry_path = str(root / "telemetry.jsonl")
+        args.run.capture_raw_responses = True
+        args.run.allow_parse_failure_bm25_fallback = False
+        ranker = instantiate_maxcontext_variant(
+            MaxContextTopDownSetwiseLlmRanker, SetwiseLlmRanker, pool_size=10
+        )
+        ranker.truncate = lambda text, length: text
+        ranker._assert_maxcontext_fits = lambda *_args: (_ for _ in ()).throw(
+            AssertionError("single-document queries must not use inference")
+        )
+        dataset = SimpleNamespace(
+            queries_iter=lambda: [SimpleNamespace(query_id="q1", text="query")],
+            docs_store=lambda: SimpleNamespace(get=lambda docid: SimpleNamespace(text="passage")),
+        )
+        with mock.patch.object(run_module.AutoConfig, "from_pretrained", return_value=SimpleNamespace(model_type="qwen3")), \
+             mock.patch.object(run_module, "MaxContextTopDownSetwiseLlmRanker", return_value=ranker), \
+             mock.patch.object(run_module.ir_datasets, "load", return_value=dataset, create=True), \
+             mock.patch.object(run_module.time, "perf_counter", side_effect=[0.0, 2.0]), \
+             redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            run_module.main(args)
+        assert (root / "comparisons.jsonl").read_text() == ""
+        original_output = (root / "output.txt").read_text()
+        telemetry = json.loads((root / "telemetry.jsonl").read_text())
+        assert telemetry["llm_calls"] == 0
+        assert telemetry["wall_seconds"] == 2.0
+        args.run.resume = True
+        ranker.rerank = lambda *_args: (_ for _ in ()).throw(AssertionError("checkpoint was not resumed"))
+        stdout = io.StringIO()
+        with mock.patch.object(run_module.AutoConfig, "from_pretrained", return_value=SimpleNamespace(model_type="qwen3")), \
+             mock.patch.object(run_module, "MaxContextTopDownSetwiseLlmRanker", return_value=ranker), \
+             mock.patch.object(run_module.ir_datasets, "load", return_value=dataset, create=True), \
+             redirect_stdout(stdout), redirect_stderr(io.StringIO()):
+            run_module.main(args)
+        assert (root / "output.txt").read_text() == original_output
+        assert len((root / "telemetry.jsonl").read_text().splitlines()) == 1
+        assert "Avg wall-clock time per query: 2.0" in stdout.getvalue()
+        # A checkpoint cannot substitute for missing raw-generation evidence.
+        next((root / "checkpoints" / "queries").glob("*.comparisons.jsonl")).unlink()
+        with mock.patch.object(run_module.AutoConfig, "from_pretrained", return_value=SimpleNamespace(model_type="qwen3")), \
+             mock.patch.object(run_module, "MaxContextTopDownSetwiseLlmRanker", return_value=ranker), \
+             mock.patch.object(run_module.ir_datasets, "load", return_value=dataset, create=True), \
+             redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            expect_raises(lambda: run_module.main(args), FileNotFoundError, "comparisons.jsonl")
+
+
 def main():
+    test_checkpointed_short_pool_raw_capture_and_resume()
     test_dispatch_invariants()
     test_maxcontext_init_invariants()
     test_parse_failure_retry_budget_invariants()

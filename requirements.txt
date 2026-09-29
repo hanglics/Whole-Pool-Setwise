@@ -1,4 +1,6 @@
 accelerate
+dacite==1.8.1
+ftfy==6.3.1
 ir-datasets
 matplotlib
 numpy

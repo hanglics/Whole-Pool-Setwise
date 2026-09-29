@@ -1,0 +1,1727 @@
+{
+  "description": "Reported measurements from completed experiment artifacts. Source hashes identify the historical runs; they are not hashes of this cleaned code export.",
+  "runs": [
+    {
+      "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "dataset": "dl19",
+      "method": "tourrank_2",
+      "queries": 43,
+      "output_depth": 10,
+      "attempt_id": "6f9fb05341a7-20260822T083339Z",
+      "source_artifact_sha256": {
+        "summary": "ea6bebea7cfbccbac77d5fbdf5161992c860a002a9ada85d6d9c39c262fb1d8b",
+        "protocol_manifest": "d26f90ea081af48a432d2ad1df5cc881473e31b8a3d49b59bd5adf46222047e3",
+        "evaluation": "21251aa534f37a17ed712b327cf0a35d002e95ca9d3c120a0bb5b8f41a058cbc",
+        "run": "f0226be98e3db38eaf78d2221f06190fb7d307dc7f6d79265e6caa8ac1a05a1a"
+      },
+      "protocol_hash": "59df55619defa00fb5bf571e0815618358db7d553e9e6aed49897b2b6e29c962",
+      "model_revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+      "tokenizer_revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+      "source_git_commit": "ee279cbe14751d754ca6c769d3774c76c974c91c",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 29900,
+        "actual_prompt_tokens": 1833499,
+        "batch_wall_seconds_sum": 0,
+        "duplicate_selection_policy": "preserve_official_dictionary_scoring_without_deduplication_or_backfill",
+        "format_failure_calls": 0,
+        "llm_calls": 1118,
+        "no_document_policy": "fail_query_without_calling_official_parser",
+        "output_depth": 10,
+        "output_objective": "top10",
+        "parser_debug_artifact": {
+          "bytes": 0,
+          "entries": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "parser_duplicate_selection_calls": 140,
+        "parser_duplicate_selection_slots": 212,
+        "parser_index_error_fallbacks": 0,
+        "parser_input_policy": "decode_api_content_without_special_tokens_then_official_parser",
+        "parser_over_selection_calls": 0,
+        "parser_over_selection_slots": 0,
+        "parser_under_selection_calls": 1,
+        "parser_under_selection_slots": 7,
+        "parser_value_error_fallbacks": 0,
+        "queries": 43,
+        "query_wall_seconds_sum": 411.44955376710277,
+        "schema_version": 1,
+        "selection_cardinality_policy": "preserve_official_parser_count_without_retry_backfill_or_rejection",
+        "special_token_stripped_calls": 1118
+      },
+      "adaptations": [
+        {
+          "changed": false,
+          "field": "ranking_logic",
+          "reason": "official filter_processing executed"
+        },
+        {
+          "changed": false,
+          "field": "prompt_text",
+          "reason": "official prompt helpers executed"
+        },
+        {
+          "changed": false,
+          "field": "parsing",
+          "reason": "official get_top_M executed"
+        },
+        {
+          "changed": false,
+          "field": "duplicate_selection_semantics",
+          "reason": "repeated labels are retained exactly as returned by official get_top_M; official dictionary point assignment collapses them without deduplication or backfill"
+        },
+        {
+          "changed": false,
+          "field": "selection_cardinality_semantics",
+          "reason": "official get_top_M cardinality is preserved when the model returns fewer or more valid labels than requested"
+        },
+        {
+          "changed": true,
+          "field": "response_transport",
+          "reason": "raw tokenizer output retained for telemetry; special-token-free API-equivalent content passed to the official parser; responses without a Document line fail without synthetic selections"
+        },
+        {
+          "changed": true,
+          "field": "debug_output_plumbing",
+          "reason": "official relative debug.txt side effects are isolated inside the immutable attempt directory"
+        },
+        {
+          "changed": true,
+          "field": "generation",
+          "reason": "paper open model with native chat template"
+        },
+        {
+          "changed": true,
+          "field": "parallelism",
+          "reason": "official process targets serialized on one GPU"
+        },
+        {
+          "changed": true,
+          "field": "randomness_seeding",
+          "reason": "nondeterministic shuffle replaced by qid/tournament-derived deterministic seed"
+        },
+        {
+          "changed": true,
+          "field": "input_plumbing",
+          "reason": "official candidate structure validated; local ir_datasets passage text used for cross-method comparability; query-limited smoke cells follow local first-stage run order"
+        }
+      ]
+    },
+    {
+      "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "dataset": "dl20",
+      "method": "tourrank_2",
+      "queries": 54,
+      "output_depth": 10,
+      "attempt_id": "65b2f0dac867-20260822T083339Z",
+      "source_artifact_sha256": {
+        "summary": "45dff710049e00bb4c6c019510fd233e32e2428b03368134c1110dfb646d78e5",
+        "protocol_manifest": "cceaf86f97bcda7f20d3a5defe701901db726ad934de545c4b2fe897a92265d0",
+        "evaluation": "6538eb5662ecf7eb764569a866db9d5dac7560600c8825d27aa495e23d288d8e",
+        "run": "8da76c7d360eacf3f123b0ba2e4658172004aee3a8828a06c0fc30679434d19a"
+      },
+      "protocol_hash": "8f76efe8bb61d32de85e844e15ae599fe15b9b4abb871455e1803ff8350c1473",
+      "model_revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+      "tokenizer_revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+      "source_git_commit": "ee279cbe14751d754ca6c769d3774c76c974c91c",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 37564,
+        "actual_prompt_tokens": 2323657,
+        "batch_wall_seconds_sum": 0,
+        "duplicate_selection_policy": "preserve_official_dictionary_scoring_without_deduplication_or_backfill",
+        "format_failure_calls": 0,
+        "llm_calls": 1404,
+        "no_document_policy": "fail_query_without_calling_official_parser",
+        "output_depth": 10,
+        "output_objective": "top10",
+        "parser_debug_artifact": {
+          "bytes": 0,
+          "entries": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "parser_duplicate_selection_calls": 165,
+        "parser_duplicate_selection_slots": 287,
+        "parser_index_error_fallbacks": 0,
+        "parser_input_policy": "decode_api_content_without_special_tokens_then_official_parser",
+        "parser_over_selection_calls": 0,
+        "parser_over_selection_slots": 0,
+        "parser_under_selection_calls": 1,
+        "parser_under_selection_slots": 5,
+        "parser_value_error_fallbacks": 0,
+        "queries": 54,
+        "query_wall_seconds_sum": 537.2625632343115,
+        "schema_version": 1,
+        "selection_cardinality_policy": "preserve_official_parser_count_without_retry_backfill_or_rejection",
+        "special_token_stripped_calls": 1404
+      },
+      "adaptations": [
+        {
+          "changed": false,
+          "field": "ranking_logic",
+          "reason": "official filter_processing executed"
+        },
+        {
+          "changed": false,
+          "field": "prompt_text",
+          "reason": "official prompt helpers executed"
+        },
+        {
+          "changed": false,
+          "field": "parsing",
+          "reason": "official get_top_M executed"
+        },
+        {
+          "changed": false,
+          "field": "duplicate_selection_semantics",
+          "reason": "repeated labels are retained exactly as returned by official get_top_M; official dictionary point assignment collapses them without deduplication or backfill"
+        },
+        {
+          "changed": false,
+          "field": "selection_cardinality_semantics",
+          "reason": "official get_top_M cardinality is preserved when the model returns fewer or more valid labels than requested"
+        },
+        {
+          "changed": true,
+          "field": "response_transport",
+          "reason": "raw tokenizer output retained for telemetry; special-token-free API-equivalent content passed to the official parser; responses without a Document line fail without synthetic selections"
+        },
+        {
+          "changed": true,
+          "field": "debug_output_plumbing",
+          "reason": "official relative debug.txt side effects are isolated inside the immutable attempt directory"
+        },
+        {
+          "changed": true,
+          "field": "generation",
+          "reason": "paper open model with native chat template"
+        },
+        {
+          "changed": true,
+          "field": "parallelism",
+          "reason": "official process targets serialized on one GPU"
+        },
+        {
+          "changed": true,
+          "field": "randomness_seeding",
+          "reason": "nondeterministic shuffle replaced by qid/tournament-derived deterministic seed"
+        },
+        {
+          "changed": true,
+          "field": "input_plumbing",
+          "reason": "official candidate structure validated; local ir_datasets passage text used for cross-method comparability; query-limited smoke cells follow local first-stage run order"
+        }
+      ]
+    },
+    {
+      "model": "mistralai/Ministral-3-8B-Instruct-2512",
+      "dataset": "dl19",
+      "method": "tourrank_2",
+      "queries": 43,
+      "output_depth": 10,
+      "attempt_id": "fa9a8ad74958-20260822T103256Z",
+      "source_artifact_sha256": {
+        "summary": "7c704fb339b9f5fcfef4864de3fa087f707a86752acb42bfef74502f744c1d21",
+        "protocol_manifest": "0caf98400b76d8d0885b635016ecbf159f566caf9feeb2d798c8db1d0558bcf0",
+        "evaluation": "49bbab52a0eec80bd3e7c200098ca6e15d313a573e9bc311789bc2d43b47eb90",
+        "run": "fdf894edc11741533281dabf4ba306a0a207b71b5979b1ece51697895fb27440"
+      },
+      "protocol_hash": "ce8d080e50b29be32efc023ea8bb12b0a012d4eaedd2824c41154b220695129e",
+      "model_revision": "dcfc440ed367bc62945a537e9e31473406535292",
+      "tokenizer_revision": "dcfc440ed367bc62945a537e9e31473406535292",
+      "source_git_commit": "826a04500c9ef0a9eab11924fb9d1cde4efbd7f5",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 33319,
+        "actual_prompt_tokens": 1736567,
+        "batch_wall_seconds_sum": 0,
+        "duplicate_selection_policy": "preserve_official_dictionary_scoring_without_deduplication_or_backfill",
+        "format_failure_calls": 0,
+        "format_repair_calls": 6,
+        "format_repair_policy": "one_deterministic_corrective_turn_on_missing_document_then_fail",
+        "format_repair_successes": 6,
+        "initial_format_failure_calls": 6,
+        "llm_calls": 1118,
+        "malformed_item_policy": "preserve_official_valueerror_substitution_and_indexerror_ignore_semantics",
+        "no_document_policy": "fail_query_without_calling_official_parser",
+        "output_depth": 10,
+        "output_objective": "top10",
+        "parser_debug_artifact": {
+          "bytes": 14759,
+          "entries": 42,
+          "sha256": "d1a154e59418f567bd52c4a180aec780f8e69d1bd24f29bdf811c82dc56ac8f4"
+        },
+        "parser_duplicate_selection_calls": 18,
+        "parser_duplicate_selection_slots": 28,
+        "parser_index_error_fallbacks": 2,
+        "parser_input_policy": "decode_api_content_without_special_tokens_then_official_parser",
+        "parser_over_selection_calls": 5,
+        "parser_over_selection_slots": 5,
+        "parser_under_selection_calls": 188,
+        "parser_under_selection_slots": 608,
+        "parser_value_error_fallbacks": 40,
+        "queries": 43,
+        "query_wall_seconds_sum": 1387.26882919122,
+        "retry_calls": 6,
+        "retry_inclusive_llm_calls": 1124,
+        "retry_seconds": 11.254214117885567,
+        "schema_version": 1,
+        "selection_cardinality_policy": "preserve_official_parser_count_without_retry_backfill_or_rejection",
+        "special_token_stripped_calls": 1116
+      },
+      "adaptations": [
+        {
+          "changed": false,
+          "field": "ranking_logic",
+          "reason": "official filter_processing executed"
+        },
+        {
+          "changed": false,
+          "field": "primary_prompt_text",
+          "reason": "official prompt helpers executed unchanged"
+        },
+        {
+          "changed": true,
+          "field": "format_repair_prompt",
+          "reason": "one deterministic corrective turn is appended only after a response with no Document line; candidates and query are unchanged and every retry is fully charged"
+        },
+        {
+          "changed": false,
+          "field": "parsing",
+          "reason": "official get_top_M executed"
+        },
+        {
+          "changed": false,
+          "field": "duplicate_selection_semantics",
+          "reason": "repeated labels are retained exactly as returned by official get_top_M; official dictionary point assignment collapses them without deduplication or backfill"
+        },
+        {
+          "changed": false,
+          "field": "selection_cardinality_semantics",
+          "reason": "official get_top_M cardinality is preserved when the model returns fewer or more valid labels than requested"
+        },
+        {
+          "changed": false,
+          "field": "malformed_item_fallback_semantics",
+          "reason": "official get_top_M ValueError substitution and IndexError ignore branches are preserved exactly and recorded"
+        },
+        {
+          "changed": true,
+          "field": "response_transport",
+          "reason": "raw tokenizer output retained for telemetry; special-token-free API-equivalent content passed to the official parser; an initial response without a Document line receives one bounded corrective turn and a second failure stops without synthetic selections"
+        },
+        {
+          "changed": true,
+          "field": "debug_output_plumbing",
+          "reason": "official relative debug.txt side effects are isolated inside the immutable attempt directory"
+        },
+        {
+          "changed": true,
+          "field": "generation",
+          "reason": "paper open model with native chat template"
+        },
+        {
+          "changed": true,
+          "field": "parallelism",
+          "reason": "official process targets serialized on one GPU"
+        },
+        {
+          "changed": true,
+          "field": "randomness_seeding",
+          "reason": "nondeterministic shuffle replaced by qid/tournament-derived deterministic seed"
+        },
+        {
+          "changed": true,
+          "field": "input_plumbing",
+          "reason": "official candidate structure validated; local ir_datasets passage text used for cross-method comparability; query-limited smoke cells follow local first-stage run order"
+        }
+      ]
+    },
+    {
+      "model": "mistralai/Ministral-3-8B-Instruct-2512",
+      "dataset": "dl20",
+      "method": "tourrank_2",
+      "queries": 54,
+      "output_depth": 10,
+      "attempt_id": "73e35441cab4-20260822T103257Z",
+      "source_artifact_sha256": {
+        "summary": "d06bd117bd6ed3e9dc5760bfbaaa309faa7c200477dc57d0e4d5704d7be700ca",
+        "protocol_manifest": "1505e3c369d4e0918fac313007c6facc2950b542504ca54c414e20b494b4adfd",
+        "evaluation": "53373e4d96c40be5f0d66b6ca02f06229870f8ac766488bc1571518f1ce96ea1",
+        "run": "b667e6761e4fd3671942d7a8921a136c3fe0b0e712f14c6603e40567d59cd395"
+      },
+      "protocol_hash": "21e3444853cb69eab1511241e6da2dfb1e1d18cae516046e93ce307f18704eda",
+      "model_revision": "dcfc440ed367bc62945a537e9e31473406535292",
+      "tokenizer_revision": "dcfc440ed367bc62945a537e9e31473406535292",
+      "source_git_commit": "826a04500c9ef0a9eab11924fb9d1cde4efbd7f5",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 43195,
+        "actual_prompt_tokens": 2231925,
+        "batch_wall_seconds_sum": 0,
+        "duplicate_selection_policy": "preserve_official_dictionary_scoring_without_deduplication_or_backfill",
+        "format_failure_calls": 0,
+        "format_repair_calls": 15,
+        "format_repair_policy": "one_deterministic_corrective_turn_on_missing_document_then_fail",
+        "format_repair_successes": 15,
+        "initial_format_failure_calls": 15,
+        "llm_calls": 1404,
+        "malformed_item_policy": "preserve_official_valueerror_substitution_and_indexerror_ignore_semantics",
+        "no_document_policy": "fail_query_without_calling_official_parser",
+        "output_depth": 10,
+        "output_objective": "top10",
+        "parser_debug_artifact": {
+          "bytes": 23612,
+          "entries": 53,
+          "sha256": "f3e4c9bf3a77652946e409c995df9319dd41cc331cc9cc447acf9f40ebca14f2"
+        },
+        "parser_duplicate_selection_calls": 22,
+        "parser_duplicate_selection_slots": 35,
+        "parser_index_error_fallbacks": 1,
+        "parser_input_policy": "decode_api_content_without_special_tokens_then_official_parser",
+        "parser_over_selection_calls": 4,
+        "parser_over_selection_slots": 6,
+        "parser_under_selection_calls": 248,
+        "parser_under_selection_slots": 829,
+        "parser_value_error_fallbacks": 52,
+        "queries": 54,
+        "query_wall_seconds_sum": 1783.089247975964,
+        "retry_calls": 15,
+        "retry_inclusive_llm_calls": 1419,
+        "retry_seconds": 20.2680158726871,
+        "schema_version": 1,
+        "selection_cardinality_policy": "preserve_official_parser_count_without_retry_backfill_or_rejection",
+        "special_token_stripped_calls": 1401
+      },
+      "adaptations": [
+        {
+          "changed": false,
+          "field": "ranking_logic",
+          "reason": "official filter_processing executed"
+        },
+        {
+          "changed": false,
+          "field": "primary_prompt_text",
+          "reason": "official prompt helpers executed unchanged"
+        },
+        {
+          "changed": true,
+          "field": "format_repair_prompt",
+          "reason": "one deterministic corrective turn is appended only after a response with no Document line; candidates and query are unchanged and every retry is fully charged"
+        },
+        {
+          "changed": false,
+          "field": "parsing",
+          "reason": "official get_top_M executed"
+        },
+        {
+          "changed": false,
+          "field": "duplicate_selection_semantics",
+          "reason": "repeated labels are retained exactly as returned by official get_top_M; official dictionary point assignment collapses them without deduplication or backfill"
+        },
+        {
+          "changed": false,
+          "field": "selection_cardinality_semantics",
+          "reason": "official get_top_M cardinality is preserved when the model returns fewer or more valid labels than requested"
+        },
+        {
+          "changed": false,
+          "field": "malformed_item_fallback_semantics",
+          "reason": "official get_top_M ValueError substitution and IndexError ignore branches are preserved exactly and recorded"
+        },
+        {
+          "changed": true,
+          "field": "response_transport",
+          "reason": "raw tokenizer output retained for telemetry; special-token-free API-equivalent content passed to the official parser; an initial response without a Document line receives one bounded corrective turn and a second failure stops without synthetic selections"
+        },
+        {
+          "changed": true,
+          "field": "debug_output_plumbing",
+          "reason": "official relative debug.txt side effects are isolated inside the immutable attempt directory"
+        },
+        {
+          "changed": true,
+          "field": "generation",
+          "reason": "paper open model with native chat template"
+        },
+        {
+          "changed": true,
+          "field": "parallelism",
+          "reason": "official process targets serialized on one GPU"
+        },
+        {
+          "changed": true,
+          "field": "randomness_seeding",
+          "reason": "nondeterministic shuffle replaced by qid/tournament-derived deterministic seed"
+        },
+        {
+          "changed": true,
+          "field": "input_plumbing",
+          "reason": "official candidate structure validated; local ir_datasets passage text used for cross-method comparability; query-limited smoke cells follow local first-stage run order"
+        }
+      ]
+    },
+    {
+      "model": "Qwen/Qwen3.5-9B",
+      "dataset": "dl19",
+      "method": "tourrank_2",
+      "queries": 43,
+      "output_depth": 10,
+      "attempt_id": "45843eddaa7a-20260822T083339Z",
+      "source_artifact_sha256": {
+        "summary": "176375756cdfb79ac91d2cebedded2507a652f873e44bc47216e12849e28bcd4",
+        "protocol_manifest": "6f8dec523ddb6cb2bf448e272fcf6d5b241e11b04b4e07ec75359f4de813a3af",
+        "evaluation": "0047c9796d262a42f347862124d91a82388be22e43980969d126d7ecad12cd23",
+        "run": "6bd1fb5ac44ed34c6347e393176a975ee66e01c371dd08db5f39704e4ee18ad4"
+      },
+      "protocol_hash": "22a5db62ab66378c5bcd4c3769a25bd252969650ccfc655c6080642ebca3d223",
+      "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "tokenizer_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "source_git_commit": "ee279cbe14751d754ca6c769d3774c76c974c91c",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 32741,
+        "actual_prompt_tokens": 1845271,
+        "batch_wall_seconds_sum": 0,
+        "duplicate_selection_policy": "preserve_official_dictionary_scoring_without_deduplication_or_backfill",
+        "format_failure_calls": 0,
+        "llm_calls": 1118,
+        "no_document_policy": "fail_query_without_calling_official_parser",
+        "output_depth": 10,
+        "output_objective": "top10",
+        "parser_debug_artifact": {
+          "bytes": 0,
+          "entries": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "parser_duplicate_selection_calls": 2,
+        "parser_duplicate_selection_slots": 2,
+        "parser_index_error_fallbacks": 0,
+        "parser_input_policy": "decode_api_content_without_special_tokens_then_official_parser",
+        "parser_over_selection_calls": 0,
+        "parser_over_selection_slots": 0,
+        "parser_under_selection_calls": 0,
+        "parser_under_selection_slots": 0,
+        "parser_value_error_fallbacks": 0,
+        "queries": 43,
+        "query_wall_seconds_sum": 1022.8460197149543,
+        "schema_version": 1,
+        "selection_cardinality_policy": "preserve_official_parser_count_without_retry_backfill_or_rejection",
+        "special_token_stripped_calls": 1118
+      },
+      "adaptations": [
+        {
+          "changed": false,
+          "field": "ranking_logic",
+          "reason": "official filter_processing executed"
+        },
+        {
+          "changed": false,
+          "field": "prompt_text",
+          "reason": "official prompt helpers executed"
+        },
+        {
+          "changed": false,
+          "field": "parsing",
+          "reason": "official get_top_M executed"
+        },
+        {
+          "changed": false,
+          "field": "duplicate_selection_semantics",
+          "reason": "repeated labels are retained exactly as returned by official get_top_M; official dictionary point assignment collapses them without deduplication or backfill"
+        },
+        {
+          "changed": false,
+          "field": "selection_cardinality_semantics",
+          "reason": "official get_top_M cardinality is preserved when the model returns fewer or more valid labels than requested"
+        },
+        {
+          "changed": true,
+          "field": "response_transport",
+          "reason": "raw tokenizer output retained for telemetry; special-token-free API-equivalent content passed to the official parser; responses without a Document line fail without synthetic selections"
+        },
+        {
+          "changed": true,
+          "field": "debug_output_plumbing",
+          "reason": "official relative debug.txt side effects are isolated inside the immutable attempt directory"
+        },
+        {
+          "changed": true,
+          "field": "generation",
+          "reason": "paper open model with native chat template"
+        },
+        {
+          "changed": true,
+          "field": "parallelism",
+          "reason": "official process targets serialized on one GPU"
+        },
+        {
+          "changed": true,
+          "field": "randomness_seeding",
+          "reason": "nondeterministic shuffle replaced by qid/tournament-derived deterministic seed"
+        },
+        {
+          "changed": true,
+          "field": "input_plumbing",
+          "reason": "official candidate structure validated; local ir_datasets passage text used for cross-method comparability; query-limited smoke cells follow local first-stage run order"
+        }
+      ]
+    },
+    {
+      "model": "Qwen/Qwen3.5-9B",
+      "dataset": "dl20",
+      "method": "tourrank_2",
+      "queries": 54,
+      "output_depth": 10,
+      "attempt_id": "ca69426e868f-20260822T083339Z",
+      "source_artifact_sha256": {
+        "summary": "8f0fe47c34d64c600c4b19b5be9492c54e27de424b69a842d685fd31366a4f90",
+        "protocol_manifest": "f5226d7bf842a351b6aef8911ea934bfb727b5fbfefee34115d9a52dbd78280f",
+        "evaluation": "c45bf89e55c97906fd7edf583d54fdcffcf4a4a81cbd438b97f8d78cda1fc3f9",
+        "run": "5f031e0cb94323bb1d9e5c4b761f2a4e399eeb524bed42f89bba860573f7e547"
+      },
+      "protocol_hash": "2619aca2e93418f7d90926a57ad42b3eec566c51e12a9b5cee4959e35119ac0c",
+      "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "tokenizer_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "source_git_commit": "ee279cbe14751d754ca6c769d3774c76c974c91c",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 41075,
+        "actual_prompt_tokens": 2341382,
+        "batch_wall_seconds_sum": 0,
+        "duplicate_selection_policy": "preserve_official_dictionary_scoring_without_deduplication_or_backfill",
+        "format_failure_calls": 0,
+        "llm_calls": 1404,
+        "no_document_policy": "fail_query_without_calling_official_parser",
+        "output_depth": 10,
+        "output_objective": "top10",
+        "parser_debug_artifact": {
+          "bytes": 0,
+          "entries": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "parser_duplicate_selection_calls": 3,
+        "parser_duplicate_selection_slots": 3,
+        "parser_index_error_fallbacks": 0,
+        "parser_input_policy": "decode_api_content_without_special_tokens_then_official_parser",
+        "parser_over_selection_calls": 0,
+        "parser_over_selection_slots": 0,
+        "parser_under_selection_calls": 0,
+        "parser_under_selection_slots": 0,
+        "parser_value_error_fallbacks": 0,
+        "queries": 54,
+        "query_wall_seconds_sum": 1333.6347145384643,
+        "schema_version": 1,
+        "selection_cardinality_policy": "preserve_official_parser_count_without_retry_backfill_or_rejection",
+        "special_token_stripped_calls": 1404
+      },
+      "adaptations": [
+        {
+          "changed": false,
+          "field": "ranking_logic",
+          "reason": "official filter_processing executed"
+        },
+        {
+          "changed": false,
+          "field": "prompt_text",
+          "reason": "official prompt helpers executed"
+        },
+        {
+          "changed": false,
+          "field": "parsing",
+          "reason": "official get_top_M executed"
+        },
+        {
+          "changed": false,
+          "field": "duplicate_selection_semantics",
+          "reason": "repeated labels are retained exactly as returned by official get_top_M; official dictionary point assignment collapses them without deduplication or backfill"
+        },
+        {
+          "changed": false,
+          "field": "selection_cardinality_semantics",
+          "reason": "official get_top_M cardinality is preserved when the model returns fewer or more valid labels than requested"
+        },
+        {
+          "changed": true,
+          "field": "response_transport",
+          "reason": "raw tokenizer output retained for telemetry; special-token-free API-equivalent content passed to the official parser; responses without a Document line fail without synthetic selections"
+        },
+        {
+          "changed": true,
+          "field": "debug_output_plumbing",
+          "reason": "official relative debug.txt side effects are isolated inside the immutable attempt directory"
+        },
+        {
+          "changed": true,
+          "field": "generation",
+          "reason": "paper open model with native chat template"
+        },
+        {
+          "changed": true,
+          "field": "parallelism",
+          "reason": "official process targets serialized on one GPU"
+        },
+        {
+          "changed": true,
+          "field": "randomness_seeding",
+          "reason": "nondeterministic shuffle replaced by qid/tournament-derived deterministic seed"
+        },
+        {
+          "changed": true,
+          "field": "input_plumbing",
+          "reason": "official candidate structure validated; local ir_datasets passage text used for cross-method comparability; query-limited smoke cells follow local first-stage run order"
+        }
+      ]
+    },
+    {
+      "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "dataset": "dl19",
+      "method": "liu_zero_shot",
+      "queries": 43,
+      "output_depth": 100,
+      "attempt_id": "a84216387448-20260804T011310Z",
+      "source_artifact_sha256": {
+        "summary": "dbcfa584d8f5e45cdafbceceed5698626c2e0091777705c5928da41471b4eb54",
+        "protocol_manifest": "05d87dc37b815931c9f3acde0448fdae1f555e39cc3fb3a17235c30607bfc60d",
+        "evaluation": "dc8ef155696115ba468a2267bbdc38aa11499065cba2882e61903abf3f8225f7",
+        "run": "398ccea2000620dcfe80ff19e0130644bb3a7efefe715dc9be6ae6c409973807"
+      },
+      "protocol_hash": "13bdcdcd0067ab12118badf512c065617eb316c952cc86fa2d317d84159aea0e",
+      "model_revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+      "tokenizer_revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+      "source_git_commit": "b4fea4262c8f5adda0a35f25de42ca92939b1068",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 17200,
+        "actual_prompt_tokens": 371825,
+        "batch_wall_seconds_sum": 0,
+        "llm_calls": 43,
+        "output_depth": 100,
+        "output_objective": "full",
+        "queries": 43,
+        "query_wall_seconds_sum": 480.8249122425914,
+        "schema_version": 1
+      },
+      "adaptations": [
+        {
+          "changed": false,
+          "field": "ranking_logic",
+          "reason": "official Reranker and sliding-window logic executed"
+        },
+        {
+          "changed": false,
+          "field": "prompt_text",
+          "reason": "official rank_GPT prefix/postfix and document conversion executed"
+        },
+        {
+          "changed": false,
+          "field": "system_message",
+          "reason": "official RankLLM system instruction preserved"
+        },
+        {
+          "changed": false,
+          "field": "parsing",
+          "reason": "official receive_permutation executed"
+        },
+        {
+          "changed": true,
+          "field": "generation",
+          "reason": "paper open model with native chat template"
+        },
+        {
+          "changed": true,
+          "field": "chat_template",
+          "reason": "model-native template replaces Mistral FastChat envelope"
+        },
+        {
+          "changed": true,
+          "field": "inference_engine",
+          "reason": "Transformers generation replaces released vLLM effectiveness path"
+        },
+        {
+          "changed": true,
+          "field": "batching_parallelism",
+          "reason": "per-query single-GPU execution replaces released four-GPU batching"
+        },
+        {
+          "changed": true,
+          "field": "input_plumbing",
+          "reason": "official candidate structure validated; local ir_datasets passage text passed through the official Liu document conversion pipeline"
+        }
+      ]
+    },
+    {
+      "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "dataset": "dl20",
+      "method": "liu_zero_shot",
+      "queries": 54,
+      "output_depth": 100,
+      "attempt_id": "1267bee048b3-20260804T011310Z",
+      "source_artifact_sha256": {
+        "summary": "1be365e46d8a8d67dd736940a629b72bb1d0426d07678531feb9a7c1d02001a2",
+        "protocol_manifest": "309acd02f3a02c5fea571b84a62d97225bc690c6f1bcc953c75362bc892c636c",
+        "evaluation": "4abc57dc8a125a370f8732190e69f9a90e30a54a4c487a17fef3c39767a7eba3",
+        "run": "faeaaacc6d38afc94a4e92534ad6aa2615739e170d430be30916365a014f0aab"
+      },
+      "protocol_hash": "d712565da023de79ec9a1f498f9339244f06b33a496c9589de6e1b7f2de5e7c9",
+      "model_revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+      "tokenizer_revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+      "source_git_commit": "b4fea4262c8f5adda0a35f25de42ca92939b1068",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 21600,
+        "actual_prompt_tokens": 473746,
+        "batch_wall_seconds_sum": 0,
+        "llm_calls": 54,
+        "output_depth": 100,
+        "output_objective": "full",
+        "queries": 54,
+        "query_wall_seconds_sum": 631.2456966242753,
+        "schema_version": 1
+      },
+      "adaptations": [
+        {
+          "changed": false,
+          "field": "ranking_logic",
+          "reason": "official Reranker and sliding-window logic executed"
+        },
+        {
+          "changed": false,
+          "field": "prompt_text",
+          "reason": "official rank_GPT prefix/postfix and document conversion executed"
+        },
+        {
+          "changed": false,
+          "field": "system_message",
+          "reason": "official RankLLM system instruction preserved"
+        },
+        {
+          "changed": false,
+          "field": "parsing",
+          "reason": "official receive_permutation executed"
+        },
+        {
+          "changed": true,
+          "field": "generation",
+          "reason": "paper open model with native chat template"
+        },
+        {
+          "changed": true,
+          "field": "chat_template",
+          "reason": "model-native template replaces Mistral FastChat envelope"
+        },
+        {
+          "changed": true,
+          "field": "inference_engine",
+          "reason": "Transformers generation replaces released vLLM effectiveness path"
+        },
+        {
+          "changed": true,
+          "field": "batching_parallelism",
+          "reason": "per-query single-GPU execution replaces released four-GPU batching"
+        },
+        {
+          "changed": true,
+          "field": "input_plumbing",
+          "reason": "official candidate structure validated; local ir_datasets passage text passed through the official Liu document conversion pipeline"
+        }
+      ]
+    },
+    {
+      "model": "mistralai/Ministral-3-8B-Instruct-2512",
+      "dataset": "dl19",
+      "method": "liu_zero_shot",
+      "queries": 43,
+      "output_depth": 100,
+      "attempt_id": "50f8433b2547-20260804T011310Z",
+      "source_artifact_sha256": {
+        "summary": "67c48a12b0bdf835384e84186cc082d94d69bab475924bf01084d2296880c4c7",
+        "protocol_manifest": "6dbffd4358ebefe0342c65c03437d8171e09b9cbe2a40bbe8bb3880e2d90e6f6",
+        "evaluation": "f30e9b52bfcec60b6de73c6dfde93967405fd42640c633e77eca4bddfdba4de0",
+        "run": "0907a73804ab8be21979e1a3c1a1c0e9e349b43ae7325b1f5fdd0380df28b1c5"
+      },
+      "protocol_hash": "4264cceb432ebd43788a8399a36deb95b8a5ab52e5176c6ab9c854d5d1b3ba00",
+      "model_revision": "dcfc440ed367bc62945a537e9e31473406535292",
+      "tokenizer_revision": "dcfc440ed367bc62945a537e9e31473406535292",
+      "source_git_commit": "b4fea4262c8f5adda0a35f25de42ca92939b1068",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 21113,
+        "actual_prompt_tokens": 382494,
+        "batch_wall_seconds_sum": 0,
+        "llm_calls": 43,
+        "output_depth": 100,
+        "output_objective": "full",
+        "queries": 43,
+        "query_wall_seconds_sum": 1388.2255752268247,
+        "schema_version": 1
+      },
+      "adaptations": [
+        {
+          "changed": false,
+          "field": "ranking_logic",
+          "reason": "official Reranker and sliding-window logic executed"
+        },
+        {
+          "changed": false,
+          "field": "prompt_text",
+          "reason": "official rank_GPT prefix/postfix and document conversion executed"
+        },
+        {
+          "changed": false,
+          "field": "system_message",
+          "reason": "official RankLLM system instruction preserved"
+        },
+        {
+          "changed": false,
+          "field": "parsing",
+          "reason": "official receive_permutation executed"
+        },
+        {
+          "changed": true,
+          "field": "generation",
+          "reason": "paper open model with native chat template"
+        },
+        {
+          "changed": true,
+          "field": "chat_template",
+          "reason": "model-native template replaces Mistral FastChat envelope"
+        },
+        {
+          "changed": true,
+          "field": "inference_engine",
+          "reason": "Transformers generation replaces released vLLM effectiveness path"
+        },
+        {
+          "changed": true,
+          "field": "batching_parallelism",
+          "reason": "per-query single-GPU execution replaces released four-GPU batching"
+        },
+        {
+          "changed": true,
+          "field": "input_plumbing",
+          "reason": "official candidate structure validated; local ir_datasets passage text passed through the official Liu document conversion pipeline"
+        }
+      ]
+    },
+    {
+      "model": "mistralai/Ministral-3-8B-Instruct-2512",
+      "dataset": "dl20",
+      "method": "liu_zero_shot",
+      "queries": 54,
+      "output_depth": 100,
+      "attempt_id": "8c5a52abaf81-20260804T011310Z",
+      "source_artifact_sha256": {
+        "summary": "8b1557845f6308aa0f2fca0823e06160a7515a9289795bbb2eccfe7e81369643",
+        "protocol_manifest": "f70c52f602e68e3a2f4f961faa6f524203f11e0592dc21e3a2b55eb6261545e9",
+        "evaluation": "e77ab0d188253a35bcd4b51c551018d5105a1fd65cc50a523ddeb03733e1fac5",
+        "run": "bd8e06f85c73884cfa7a92736b0e4485dc810346c969741966481b1ba1c1c521"
+      },
+      "protocol_hash": "d3b0140720cc012a5dfdaa25dd51212302e06895769261ea8d90e6404cfe7abe",
+      "model_revision": "dcfc440ed367bc62945a537e9e31473406535292",
+      "tokenizer_revision": "dcfc440ed367bc62945a537e9e31473406535292",
+      "source_git_commit": "b4fea4262c8f5adda0a35f25de42ca92939b1068",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 26514,
+        "actual_prompt_tokens": 493126,
+        "batch_wall_seconds_sum": 0,
+        "llm_calls": 54,
+        "output_depth": 100,
+        "output_objective": "full",
+        "queries": 54,
+        "query_wall_seconds_sum": 1881.3938931152225,
+        "schema_version": 1
+      },
+      "adaptations": [
+        {
+          "changed": false,
+          "field": "ranking_logic",
+          "reason": "official Reranker and sliding-window logic executed"
+        },
+        {
+          "changed": false,
+          "field": "prompt_text",
+          "reason": "official rank_GPT prefix/postfix and document conversion executed"
+        },
+        {
+          "changed": false,
+          "field": "system_message",
+          "reason": "official RankLLM system instruction preserved"
+        },
+        {
+          "changed": false,
+          "field": "parsing",
+          "reason": "official receive_permutation executed"
+        },
+        {
+          "changed": true,
+          "field": "generation",
+          "reason": "paper open model with native chat template"
+        },
+        {
+          "changed": true,
+          "field": "chat_template",
+          "reason": "model-native template replaces Mistral FastChat envelope"
+        },
+        {
+          "changed": true,
+          "field": "inference_engine",
+          "reason": "Transformers generation replaces released vLLM effectiveness path"
+        },
+        {
+          "changed": true,
+          "field": "batching_parallelism",
+          "reason": "per-query single-GPU execution replaces released four-GPU batching"
+        },
+        {
+          "changed": true,
+          "field": "input_plumbing",
+          "reason": "official candidate structure validated; local ir_datasets passage text passed through the official Liu document conversion pipeline"
+        }
+      ]
+    },
+    {
+      "model": "Qwen/Qwen3.5-9B",
+      "dataset": "dl19",
+      "method": "liu_zero_shot",
+      "queries": 43,
+      "output_depth": 100,
+      "attempt_id": "5edc3094aebc-20260804T011310Z",
+      "source_artifact_sha256": {
+        "summary": "5ba87d171bf8f94e17f7acac28a005133afd5993b06c7833372c12b400bcbba2",
+        "protocol_manifest": "e2fd7c0bd128e49f32d89b72a3eda0180deb93aa0438095db3e920876762d378",
+        "evaluation": "cc5056b381dc3c252757f2c94741c42a70209fa7a8520d05eed8ed48cb7204a5",
+        "run": "941690e174c6894c8dc78b7e8a486f87cc7a6f4cbc861812c9cfb7182c7e759f"
+      },
+      "protocol_hash": "dd7bbb3599f04a3c2d033469fdf1dab8f32e07d0e87d8883d50171e70da78eaa",
+      "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "tokenizer_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "source_git_commit": "b4fea4262c8f5adda0a35f25de42ca92939b1068",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 21113,
+        "actual_prompt_tokens": 385197,
+        "batch_wall_seconds_sum": 0,
+        "llm_calls": 43,
+        "output_depth": 100,
+        "output_objective": "full",
+        "queries": 43,
+        "query_wall_seconds_sum": 1038.4805078746285,
+        "schema_version": 1
+      },
+      "adaptations": [
+        {
+          "changed": false,
+          "field": "ranking_logic",
+          "reason": "official Reranker and sliding-window logic executed"
+        },
+        {
+          "changed": false,
+          "field": "prompt_text",
+          "reason": "official rank_GPT prefix/postfix and document conversion executed"
+        },
+        {
+          "changed": false,
+          "field": "system_message",
+          "reason": "official RankLLM system instruction preserved"
+        },
+        {
+          "changed": false,
+          "field": "parsing",
+          "reason": "official receive_permutation executed"
+        },
+        {
+          "changed": true,
+          "field": "generation",
+          "reason": "paper open model with native chat template"
+        },
+        {
+          "changed": true,
+          "field": "chat_template",
+          "reason": "model-native template replaces Mistral FastChat envelope"
+        },
+        {
+          "changed": true,
+          "field": "inference_engine",
+          "reason": "Transformers generation replaces released vLLM effectiveness path"
+        },
+        {
+          "changed": true,
+          "field": "batching_parallelism",
+          "reason": "per-query single-GPU execution replaces released four-GPU batching"
+        },
+        {
+          "changed": true,
+          "field": "input_plumbing",
+          "reason": "official candidate structure validated; local ir_datasets passage text passed through the official Liu document conversion pipeline"
+        }
+      ]
+    },
+    {
+      "model": "Qwen/Qwen3.5-9B",
+      "dataset": "dl20",
+      "method": "liu_zero_shot",
+      "queries": 54,
+      "output_depth": 100,
+      "attempt_id": "12dcbe1c8326-20260804T011310Z",
+      "source_artifact_sha256": {
+        "summary": "47608bb4a35cb02b6a34f4a9f2bedf91d75d79fcfee977bd7e46d649a0353bd2",
+        "protocol_manifest": "b5a6e0afe5d4f516ec27a57acc7c14cc93ce5f5263b520bc0e46b925a13e8509",
+        "evaluation": "e2bc5ed91628b154aca573841805e15e54d83a556b328b6b7e526755a92bd25f",
+        "run": "faea346a1c4a31cf70d30e8975960f26885cd3ab577c5b474631a0c80bf846db"
+      },
+      "protocol_hash": "afe868c584bb1f6b5d1c51b6e015b317f91213fdd07722331872092b9351e676",
+      "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "tokenizer_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "source_git_commit": "b4fea4262c8f5adda0a35f25de42ca92939b1068",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 26514,
+        "actual_prompt_tokens": 492578,
+        "batch_wall_seconds_sum": 0,
+        "llm_calls": 54,
+        "output_depth": 100,
+        "output_objective": "full",
+        "queries": 54,
+        "query_wall_seconds_sum": 1234.8893955396488,
+        "schema_version": 1
+      },
+      "adaptations": [
+        {
+          "changed": false,
+          "field": "ranking_logic",
+          "reason": "official Reranker and sliding-window logic executed"
+        },
+        {
+          "changed": false,
+          "field": "prompt_text",
+          "reason": "official rank_GPT prefix/postfix and document conversion executed"
+        },
+        {
+          "changed": false,
+          "field": "system_message",
+          "reason": "official RankLLM system instruction preserved"
+        },
+        {
+          "changed": false,
+          "field": "parsing",
+          "reason": "official receive_permutation executed"
+        },
+        {
+          "changed": true,
+          "field": "generation",
+          "reason": "paper open model with native chat template"
+        },
+        {
+          "changed": true,
+          "field": "chat_template",
+          "reason": "model-native template replaces Mistral FastChat envelope"
+        },
+        {
+          "changed": true,
+          "field": "inference_engine",
+          "reason": "Transformers generation replaces released vLLM effectiveness path"
+        },
+        {
+          "changed": true,
+          "field": "batching_parallelism",
+          "reason": "per-query single-GPU execution replaces released four-GPU batching"
+        },
+        {
+          "changed": true,
+          "field": "input_plumbing",
+          "reason": "official candidate structure validated; local ir_datasets passage text passed through the official Liu document conversion pipeline"
+        }
+      ]
+    },
+    {
+      "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "dataset": "dl19",
+      "method": "wp_de_top10",
+      "queries": 43,
+      "output_depth": 10,
+      "attempt_id": "d84231cb0031-20260804T011318Z",
+      "source_artifact_sha256": {
+        "summary": "5b102076bb586c1e8e84ce6f68a85b7cf1fbac036adf270631352a0e3b3470ee",
+        "protocol_manifest": "7058d145af76ac39134b595e243614adc60ea854a946ee4ca73480ee986c548e",
+        "evaluation": "65cc0f4a6c5e8a7a4c06189d432876f83802f5a4f4ad4ec32e2828edecae655c",
+        "run": "3c922d76d5c026e80d075b6e53043f01777f9146f60086275b20dc27922c3136"
+      },
+      "protocol_hash": "28df72e7695d320eaeec77178b63582c5aa85b8eb49aae1bfff54df9991ad66e",
+      "model_revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+      "tokenizer_revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+      "source_git_commit": "b4fea4262c8f5adda0a35f25de42ca92939b1068",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 4255,
+        "actual_prompt_tokens": 3584095,
+        "llm_calls": 430,
+        "output_depth": 10,
+        "queries": 43,
+        "schema_version": 1,
+        "wall_seconds": 315.5464314529672
+      },
+      "adaptations": []
+    },
+    {
+      "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "dataset": "dl19",
+      "method": "wp_t_top10",
+      "queries": 43,
+      "output_depth": 10,
+      "attempt_id": "5acb2bfd98cc-20260804T011318Z",
+      "source_artifact_sha256": {
+        "summary": "6ff95dc871c3ed8170da33638df41a4f4b739b2e75f3146f41c23d98e0deb3f3",
+        "protocol_manifest": "8f2ed8c1782a61656ab9aa1f7721a4e31d63930cc4e7162702afd30873a0bc31",
+        "evaluation": "a86e739707563a431033c6e215067848e361ca15bbf0f6650ad7f0ed38e1b2d6",
+        "run": "90918dd0c70e44c70eb82285247511ec08b18119052e8af7734c08f25ce6fdfc"
+      },
+      "protocol_hash": "c83898ce79720714e75c2829d5f9227e3f634cd9b2d261c7983d9af82fb10341",
+      "model_revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+      "tokenizer_revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+      "source_git_commit": "b4fea4262c8f5adda0a35f25de42ca92939b1068",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 1290,
+        "actual_prompt_tokens": 3753356,
+        "llm_calls": 430,
+        "output_depth": 10,
+        "queries": 43,
+        "schema_version": 1,
+        "wall_seconds": 259.1969097054098
+      },
+      "adaptations": []
+    },
+    {
+      "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "dataset": "dl20",
+      "method": "wp_de_top10",
+      "queries": 54,
+      "output_depth": 10,
+      "attempt_id": "549c07890e88-20260804T011319Z",
+      "source_artifact_sha256": {
+        "summary": "cc879b427cd96addbf1159f7042b2b69c0860fe80b552c8c73f43d4028ca7c4b",
+        "protocol_manifest": "d7b692dfdd83973318cfba23a54c36f5a29af3a41b461573e6e05b44528dab03",
+        "evaluation": "0398b86d242c7f2ac4f4d48f385a94b0ddd8c4a501c57c7a96c0a9815a026150",
+        "run": "081d69458eb4072699be469802a7c6dded1999aafafd02ab4bc86ea5e0083e50"
+      },
+      "protocol_hash": "30d13a0a240cb4fb097db32d7e0067de026a6a377d14d361dc4adefc500e1012",
+      "model_revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+      "tokenizer_revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+      "source_git_commit": "b4fea4262c8f5adda0a35f25de42ca92939b1068",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 5325,
+        "actual_prompt_tokens": 4587024,
+        "llm_calls": 540,
+        "output_depth": 10,
+        "queries": 54,
+        "schema_version": 1,
+        "wall_seconds": 400.75313591584563
+      },
+      "adaptations": []
+    },
+    {
+      "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "dataset": "dl20",
+      "method": "wp_t_top10",
+      "queries": 54,
+      "output_depth": 10,
+      "attempt_id": "317fc0fb86f9-20260804T011319Z",
+      "source_artifact_sha256": {
+        "summary": "378f4b083f5dc269a90c945e31fef06ae4ea28efbf36a60183f665e6fd40769d",
+        "protocol_manifest": "de2b6b15b698670b4c3d4fa35cbc1a94db3ff78c17e967db1e47c4b1fecd3015",
+        "evaluation": "b9854fd6acd1ae5fba033de7b13df58bc5b3564e9fa981323525eef461167bca",
+        "run": "5bf7330ff35912cac37f6c566fec2c792719a0cbc88884f0657fbd8c54ff894f"
+      },
+      "protocol_hash": "986ab1ad91a03679745a05f5298b90ea29283f6271d231cd444020335dee012c",
+      "model_revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+      "tokenizer_revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+      "source_git_commit": "b4fea4262c8f5adda0a35f25de42ca92939b1068",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 1620,
+        "actual_prompt_tokens": 4815389,
+        "llm_calls": 540,
+        "output_depth": 10,
+        "queries": 54,
+        "schema_version": 1,
+        "wall_seconds": 324.09827164001763
+      },
+      "adaptations": []
+    },
+    {
+      "model": "mistralai/Ministral-3-8B-Instruct-2512",
+      "dataset": "dl19",
+      "method": "wp_de_top10",
+      "queries": 43,
+      "output_depth": 10,
+      "attempt_id": "c8d97f7289f1-20260804T011319Z",
+      "source_artifact_sha256": {
+        "summary": "2b55910207b2a32e43519e11d6c3f3387e5c7caf5cad421ea4a848a6af9fa005",
+        "protocol_manifest": "e0216f5013a6ec27e7062c406ebec62f6d3231814d3c5fbd85dd43ca45051a48",
+        "evaluation": "677ccf7766444aca03e064aa469aec9794027ed75bad76e24199c2f75bcddde2",
+        "run": "0a12b4594c2b18cb18b3efc7f18fb7c61d95c7120b47689faef19ff77f325d54"
+      },
+      "protocol_hash": "3a0dcc97991049bf345f9362d1a8b913bcda47a0268e7fb2364511793d372f16",
+      "model_revision": "dcfc440ed367bc62945a537e9e31473406535292",
+      "tokenizer_revision": "dcfc440ed367bc62945a537e9e31473406535292",
+      "source_git_commit": "b4fea4262c8f5adda0a35f25de42ca92939b1068",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 5453,
+        "actual_prompt_tokens": 3910249,
+        "llm_calls": 430,
+        "output_depth": 10,
+        "queries": 43,
+        "schema_version": 1,
+        "wall_seconds": 712.3031076109037
+      },
+      "adaptations": []
+    },
+    {
+      "model": "mistralai/Ministral-3-8B-Instruct-2512",
+      "dataset": "dl19",
+      "method": "wp_t_top10",
+      "queries": 43,
+      "output_depth": 10,
+      "attempt_id": "a37fbcd70d6f-20260804T011319Z",
+      "source_artifact_sha256": {
+        "summary": "e2acebbbf2f9fe32505b259719f6139633ad8f7784e569eb1589cef5de6ed0af",
+        "protocol_manifest": "e1e0ad5e452b71a74465401132eea01e3a889e782ba2c3357bd9d0ae453efe16",
+        "evaluation": "372444dd8b2655dd4fd2c1b1a26483b0e2bd5eb8bc503c31e237e15ad83419fd",
+        "run": "f48cdfddc088c4e6c95991c2a49043471779ec0a9fd0d0def81e3f1b106c7489"
+      },
+      "protocol_hash": "a24e1694aa9eb788235699366d33141731c60344a2f83ce768fce2cd4667f7bf",
+      "model_revision": "dcfc440ed367bc62945a537e9e31473406535292",
+      "tokenizer_revision": "dcfc440ed367bc62945a537e9e31473406535292",
+      "source_git_commit": "b4fea4262c8f5adda0a35f25de42ca92939b1068",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 4011,
+        "actual_prompt_tokens": 4093518,
+        "llm_calls": 430,
+        "output_depth": 10,
+        "queries": 43,
+        "schema_version": 1,
+        "wall_seconds": 642.7042232947424
+      },
+      "adaptations": []
+    },
+    {
+      "model": "mistralai/Ministral-3-8B-Instruct-2512",
+      "dataset": "dl20",
+      "method": "wp_de_top10",
+      "queries": 54,
+      "output_depth": 10,
+      "attempt_id": "aff6e912b2dc-20260804T011319Z",
+      "source_artifact_sha256": {
+        "summary": "73b9953254e78409830ace121fbb8e202983cb353799ba47b9999a0f963a43f9",
+        "protocol_manifest": "d26479b2adeb234297b5566714c33ae6aa46ee3ca2c2a11df56620102cd5a3c0",
+        "evaluation": "ef3bdec7b3021433de278001c5d79d2ef12080b91f241fc02312fbada202e575",
+        "run": "09b79dbe7c7c9c8c6af84a95a1420e170971ed9124ae223ddb4fdb92c9c0584c"
+      },
+      "protocol_hash": "27e250b022416bcdcace47f813a8aa02a7ca665a1c8e2c9f05ea07fba7b5fc78",
+      "model_revision": "dcfc440ed367bc62945a537e9e31473406535292",
+      "tokenizer_revision": "dcfc440ed367bc62945a537e9e31473406535292",
+      "source_git_commit": "b4fea4262c8f5adda0a35f25de42ca92939b1068",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 6782,
+        "actual_prompt_tokens": 5055311,
+        "llm_calls": 540,
+        "output_depth": 10,
+        "queries": 54,
+        "schema_version": 1,
+        "wall_seconds": 895.0781652946025
+      },
+      "adaptations": []
+    },
+    {
+      "model": "mistralai/Ministral-3-8B-Instruct-2512",
+      "dataset": "dl20",
+      "method": "wp_t_top10",
+      "queries": 54,
+      "output_depth": 10,
+      "attempt_id": "94cc96a3849c-20260804T011319Z",
+      "source_artifact_sha256": {
+        "summary": "dc6f9bd67af8fc453be7f01f5a4690c734c731300e7c02f79b4362961a1c5e2b",
+        "protocol_manifest": "d5e1f32cdef34fc7a7d847510a5873283743e4c971b25c904a07c80d56888943",
+        "evaluation": "37cba307f27241c85212a449cc444188cd9fce6fbd453ab562125d67b65e0553",
+        "run": "913aefe17fa4fcb5059725d87edfa6c4b51a08f7b32a6d15684ab24ef583e57f"
+      },
+      "protocol_hash": "c42f9870dd9e0651af583c7d9b766bad5d36da6b9f9198a2409f1c4f4e39dc4b",
+      "model_revision": "dcfc440ed367bc62945a537e9e31473406535292",
+      "tokenizer_revision": "dcfc440ed367bc62945a537e9e31473406535292",
+      "source_git_commit": "b4fea4262c8f5adda0a35f25de42ca92939b1068",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 4147,
+        "actual_prompt_tokens": 5294368,
+        "llm_calls": 540,
+        "output_depth": 10,
+        "queries": 54,
+        "schema_version": 1,
+        "wall_seconds": 761.5790129704401
+      },
+      "adaptations": []
+    },
+    {
+      "model": "Qwen/Qwen3.5-9B",
+      "dataset": "dl19",
+      "method": "wp_de_top10",
+      "queries": 43,
+      "output_depth": 10,
+      "attempt_id": "c14d154d82e6-20260804T011318Z",
+      "source_artifact_sha256": {
+        "summary": "f0f24ffacb6069e6d3973a10a513a26c7910c3002ccad7860ca9b87372673280",
+        "protocol_manifest": "9fab0a46563dd0ad1dad306ce0414fae238e13f0975fd04244218d010fe37288",
+        "evaluation": "c793cab3af0ec1785f297ff084f2fa297615b4699fa3d056bc895c7035443a0a",
+        "run": "818ff7e88fe24c537a91e2ad05e350df2e873153598892dc1fea2cbe6fe3fccc"
+      },
+      "protocol_hash": "d772a8997bbc384dc140d932b5ef0a805e9a79e39db732d03ce84d34a908991a",
+      "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "tokenizer_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "source_git_commit": "b4fea4262c8f5adda0a35f25de42ca92939b1068",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 4815,
+        "actual_prompt_tokens": 3694109,
+        "llm_calls": 430,
+        "output_depth": 10,
+        "queries": 43,
+        "schema_version": 1,
+        "wall_seconds": 978.2454931889661
+      },
+      "adaptations": []
+    },
+    {
+      "model": "Qwen/Qwen3.5-9B",
+      "dataset": "dl19",
+      "method": "wp_t_top10",
+      "queries": 43,
+      "output_depth": 10,
+      "attempt_id": "190e4f79adca-20260804T011318Z",
+      "source_artifact_sha256": {
+        "summary": "64225655dd54deb50906c38db1621a621d810413df8dc4562abb7dffde2b3f5f",
+        "protocol_manifest": "d50ee9cf62c980a37426feede5c892df60cf53e0c4115b24bd38dde9613d134e",
+        "evaluation": "1f619a5fd09e37e37ce5f37f83d0e0fb8da101b8d5135326487b38524e17df12",
+        "run": "ae1a71da48459fa9fd5b1465cb61e9c249fcae4705aaad000f100ce956e2d513"
+      },
+      "protocol_hash": "aafaaecfbde6ad04933cfb8f5287ea5a7364f705c10e65b860eaec237a9d61db",
+      "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "tokenizer_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "source_git_commit": "b4fea4262c8f5adda0a35f25de42ca92939b1068",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 1629,
+        "actual_prompt_tokens": 3880726,
+        "llm_calls": 430,
+        "output_depth": 10,
+        "queries": 43,
+        "schema_version": 1,
+        "wall_seconds": 882.7206959208706
+      },
+      "adaptations": []
+    },
+    {
+      "model": "Qwen/Qwen3.5-9B",
+      "dataset": "dl20",
+      "method": "wp_de_top10",
+      "queries": 54,
+      "output_depth": 10,
+      "attempt_id": "5999b8d0dd59-20260804T011318Z",
+      "source_artifact_sha256": {
+        "summary": "5333fd17bb9a417cc872e295ce5a9f9996ece597d1efc71dd27ddee046184dfb",
+        "protocol_manifest": "21cf2cd38bdb687f23df570871fc05641c7fd5eeab29dcfb142e963852c5f7ca",
+        "evaluation": "d3264446cd42444ee618905ac33b6d021bd2d1fe7785ae90413acd26a42e7ff1",
+        "run": "5e9068774539ba77f38f7810527bc3776c981fc6d7153e4b28b5b1c9cf30f068"
+      },
+      "protocol_hash": "2f07058514a3fa2718270a6b0097778f1403d5a14e532cbf438f30c8114578e8",
+      "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "tokenizer_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "source_git_commit": "b4fea4262c8f5adda0a35f25de42ca92939b1068",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 6068,
+        "actual_prompt_tokens": 4756610,
+        "llm_calls": 540,
+        "output_depth": 10,
+        "queries": 54,
+        "schema_version": 1,
+        "wall_seconds": 1253.852714093402
+      },
+      "adaptations": []
+    },
+    {
+      "model": "Qwen/Qwen3.5-9B",
+      "dataset": "dl20",
+      "method": "wp_t_top10",
+      "queries": 54,
+      "output_depth": 10,
+      "attempt_id": "8d2da4bbfb7a-20260804T011318Z",
+      "source_artifact_sha256": {
+        "summary": "2369c032798c8a0f423943897d3d3f7f9235c80e10e56b3f9a2bf125d1eb107c",
+        "protocol_manifest": "d7074e4d5e09bc98e6755ad72b123102b7adc09c829026eaa3a437a63a76d1e8",
+        "evaluation": "1b2419c158257e872fe980eea76a4bf66442b625113412782869f48ab5e65df0",
+        "run": "934d85906e8fa6bf198419ea59375691c3aea2ea83829102c1db6a6a42de3d69"
+      },
+      "protocol_hash": "a5aff174a516d59cbfe1f3d7943352482013052aa6c74c7e60d991a08d60d016",
+      "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "tokenizer_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "source_git_commit": "b4fea4262c8f5adda0a35f25de42ca92939b1068",
+      "source_git_dirty": true,
+      "runtime_packages": {
+        "accelerate": "1.13.0",
+        "dacite": "1.8.1",
+        "ftfy": "6.3.1",
+        "ir-datasets": "0.5.6",
+        "pyserini": "1.2.0",
+        "torch": "2.10.0",
+        "transformers": "5.3.0",
+        "vllm": null
+      },
+      "summary": {
+        "actual_completion_tokens": 3258,
+        "actual_prompt_tokens": 5003496,
+        "llm_calls": 540,
+        "output_depth": 10,
+        "queries": 54,
+        "schema_version": 1,
+        "wall_seconds": 1196.8722298560897
+      },
+      "adaptations": []
+    }
+  ]
+}

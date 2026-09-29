@@ -55,8 +55,9 @@ def _setup_maxcontext_numeric_attrs(ranker, pool_size: int) -> None:
     #   total_strict_parse_fallback     — recovered local strict-mode fallbacks
     #   total_parse_failure_bm25_fallback — incremented when the BM25 fallback
     #     handler catches a parse-failure ValueError and recovers the query.
-    #   total_retries / total_retry_overhead_seconds — retry-visible only in
-    #     logs; hidden from comparison/token/time metrics.
+    #   total_retries / total_retry_overhead_seconds — retry-visible in logs;
+    #     excluded from nominal comparison/token metrics but included in raw
+    #     wall-clock latency.
     ranker.total_parse_failure_strict = 0
     ranker.total_parse_failure_bm25_fallback = 0
     ranker.total_retries = 0
@@ -86,10 +87,12 @@ def _maxcontext_should_fallback_to_bm25(ranker, exc: BaseException) -> bool:
 
 
 def _reset_maxcontext_query_stats(ranker) -> None:
-    """Reset per-query counters before MaxContext early returns/fallbacks."""
+    """Reset per-query counters for MaxContext short-pool and normal paths."""
     ranker.total_compare = 0
-    ranker.total_completion_tokens = 0
     ranker.total_prompt_tokens = 0
+    ranker.total_completion_tokens = 0
+    ranker.total_retry_prompt_tokens = 0
+    ranker.total_retry_completion_tokens = 0
     ranker.total_retries = 0
     ranker.total_retry_overhead_seconds = 0.0
     ranker.total_parse_fallback = 0
@@ -104,21 +107,20 @@ def _reset_maxcontext_query_stats(ranker) -> None:
     ranker.total_parse_failure_bm25_fallback = 0
     if hasattr(ranker, "total_bm25_bypass"):
         ranker.total_bm25_bypass = 0
+    ranker.total_selection_steps = 0
+    ranker.total_non_llm_bypasses = 0
+    ranker.max_rendered_prompt_tokens = 0
+    ranker.min_context_fit_margin = None
+    ranker.rendered_prompt_hashes = []
 
 
-def _validate_maxcontext_pool_size(ranker, docs: List[SearchResult], name: str) -> None:
-    max_docs = getattr(ranker, "_maxcontext_pool_size", None)
-    if max_docs is not None and len(docs) > max_docs:
+def _validate_maxcontext_pool_cap(ranker, docs: Sequence[SearchResult], name: str) -> None:
+    pool_size = getattr(ranker, "_maxcontext_pool_size", None)
+    if pool_size is not None and len(docs) > pool_size:
         raise ValueError(
-            f"{name} expects at most pool_size={max_docs} input docs; got {len(docs)}."
+            f"{name} expects at most pool_size={pool_size} input docs; "
+            f"got {len(docs)}."
         )
-
-
-def _materialize_maxcontext_results(docs: Sequence[SearchResult]) -> List[SearchResult]:
-    return [
-        SearchResult(docid=doc.docid, score=-rank, text=None)
-        for rank, doc in enumerate(docs, start=1)
-    ]
 
 
 def _resolve_maxcontext_label_index(
@@ -167,6 +169,7 @@ class _MaxContextOrderingMixin:
         rng.shuffle(out)
         return out
 
+
     def _derive_shuffle_seed(self, round_pool_size: int) -> int:
         qid = str(getattr(self, "_current_qid", "") or "")
         digest = hashlib.blake2b(
@@ -207,6 +210,10 @@ def _assert_maxcontext_topdown_fits(ranker, query, docs) -> None:
     rendered_ids = ranker.tokenizer.encode(rendered, add_special_tokens=True)
     rendered_length = len(rendered_ids)
     budget = ranker.max_input_tokens - 256
+    ranker.max_rendered_prompt_tokens = max(
+        getattr(ranker, "max_rendered_prompt_tokens", 0), rendered_length
+    )
+    ranker.min_context_fit_margin = budget - rendered_length
 
     if rendered_length > budget:
         raise ValueError(
@@ -227,6 +234,10 @@ def _assert_maxcontext_bottomup_fits(ranker, query, docs) -> None:
     rendered_ids = ranker.tokenizer.encode(rendered, add_special_tokens=True)
     rendered_length = len(rendered_ids)
     budget = ranker.max_input_tokens - 256
+    ranker.max_rendered_prompt_tokens = max(
+        getattr(ranker, "max_rendered_prompt_tokens", 0), rendered_length
+    )
+    ranker.min_context_fit_margin = budget - rendered_length
 
     if rendered_length > budget:
         raise ValueError(
@@ -255,6 +266,7 @@ class BottomUpSetwiseLlmRanker(SetwiseLlmRanker):
         self.total_compare += 1 if self.num_permutation == 1 else self.num_permutation
         parse_status = "parsed"
         parse_fallback_reason = None
+        comparison_raw_output = None
 
         input_text = self._build_worst_prompt(query, docs)
 
@@ -274,6 +286,8 @@ class BottomUpSetwiseLlmRanker(SetwiseLlmRanker):
 
                     raw_output = self.tokenizer.decode(output_ids,
                                                        skip_special_tokens=True).strip()
+                    if getattr(self, "capture_raw_responses", False):
+                        comparison_raw_output = raw_output
                     output = self._parse_single_label(raw_output, self.CHARACTERS[:len(docs)])
                     if output is None:
                         output = self._clean_generation_output(raw_output).upper()
@@ -344,7 +358,7 @@ class BottomUpSetwiseLlmRanker(SetwiseLlmRanker):
                 attempt = 0
                 while True:
                     snapshot = self._snapshot_retry_invisible_counters()
-                    retry_start = time.perf_counter() if attempt > 0 else None
+                    attempt_start = time.perf_counter()
 
                     inputs = self._tokenize_inputs(prompt)
                     self.total_prompt_tokens += inputs.input_ids.shape[1]
@@ -356,8 +370,8 @@ class BottomUpSetwiseLlmRanker(SetwiseLlmRanker):
 
                     raw_output = self.tokenizer.decode(output_ids[inputs.input_ids.shape[1]:],
                                                        skip_special_tokens=False).strip()
-                    if retry_start is not None:
-                        self._record_parse_failure_retry(retry_start)
+                    if getattr(self, "capture_raw_responses", False):
+                        comparison_raw_output = raw_output
                     output = self._parse_single_label(raw_output, self.CHARACTERS[:len(docs)])
                     if output is not None:
                         break
@@ -377,6 +391,7 @@ class BottomUpSetwiseLlmRanker(SetwiseLlmRanker):
 
                     reason = self._classify_numeric_noop(raw_output, len(docs))
                     if reason is None and attempt < retry_budget:
+                        self._record_parse_failure_retry(attempt_start)
                         self._restore_retry_invisible_counters(snapshot)
                         attempt += 1
                         continue
@@ -431,6 +446,7 @@ class BottomUpSetwiseLlmRanker(SetwiseLlmRanker):
                 "worst", self.CHARACTERS[:len(docs)], output, docs,
                 parse_status=parse_status,
                 parse_fallback_reason=parse_fallback_reason,
+                raw_output=comparison_raw_output,
             )
         else:
             print(f"Unexpected output: {output}")
@@ -494,6 +510,9 @@ class BottomUpSetwiseLlmRanker(SetwiseLlmRanker):
         self.total_unparseable_after_exhaustion_fallback = 0
         self.total_duplicate_label_fallback = 0
         self.total_lenient_fallback = 0
+
+        if len(ranking) <= 1:
+            return self._materialize_ranking(ranking, original_ranking)
 
         if self.method == "heapsort":
             self.heapSort(ranking, query, self.k)
@@ -712,6 +731,7 @@ class DualEndSetwiseLlmRanker(SetwiseLlmRanker):
         parse_status = "parsed"
         parse_fallback_reason = None
         comparison_raw_output = None
+        comparison_raw_attempts = []
         latest_raw_output = None
         strict_raise_attempt = 0
         strict_raise_budget = self._parse_failure_retry_budget()
@@ -758,7 +778,7 @@ class DualEndSetwiseLlmRanker(SetwiseLlmRanker):
                 while True:
                     strict_raise_attempt = attempt
                     snapshot = self._snapshot_retry_invisible_counters()
-                    retry_start = time.perf_counter() if attempt > 0 else None
+                    attempt_start = time.perf_counter()
 
                     inputs = self._tokenize_inputs(prompt)
                     self.total_prompt_tokens += inputs.input_ids.shape[1]
@@ -774,8 +794,20 @@ class DualEndSetwiseLlmRanker(SetwiseLlmRanker):
                     raw_output = self.tokenizer.decode(output_ids[inputs.input_ids.shape[1]:],
                                                        skip_special_tokens=False).strip()
                     latest_raw_output = raw_output
-                    if retry_start is not None:
-                        self._record_parse_failure_retry(retry_start)
+                    if getattr(self, "capture_raw_responses", False):
+                        comparison_raw_output = raw_output
+                        comparison_raw_attempts.append(
+                            {
+                                "attempt_index": attempt,
+                                "raw_output": raw_output,
+                                "prompt_tokens": int(
+                                    self.total_prompt_tokens - snapshot.total_prompt_tokens
+                                ),
+                                "completion_tokens": int(
+                                    self.total_completion_tokens - snapshot.total_completion_tokens
+                                ),
+                            }
+                        )
                     cleaned_output = self._clean_generation_output(raw_output)
                     # Always parse from the single call — never fall back to 2 separate calls
                     try:
@@ -791,6 +823,7 @@ class DualEndSetwiseLlmRanker(SetwiseLlmRanker):
                         else:
                             reason = self._classify_numeric_noop(raw_output, len(docs))
                         if reason is None and attempt < retry_budget:
+                            self._record_parse_failure_retry(attempt_start)
                             self._restore_retry_invisible_counters(snapshot)
                             attempt += 1
                             continue
@@ -921,17 +954,37 @@ class DualEndSetwiseLlmRanker(SetwiseLlmRanker):
                     worst = c
                     break
 
+        if comparison_raw_attempts:
+            for raw_attempt in comparison_raw_attempts[:-1]:
+                raw_attempt.update(
+                    {
+                        "accepted": False,
+                        "parse_result": None,
+                        "parse_reason": "retry_parse_failure",
+                    }
+                )
+            comparison_raw_attempts[-1].update(
+                {
+                    "accepted": parse_status == "parsed",
+                    "parse_result": {"best": best, "worst": worst}
+                    if parse_status == "parsed"
+                    else None,
+                    "parse_reason": None if parse_status == "parsed" else parse_fallback_reason,
+                }
+            )
         self._log_comparison(
             "dual_best", self.CHARACTERS[:len(docs)], best, docs,
             parse_status=parse_status,
             parse_fallback_reason=parse_fallback_reason,
             raw_output=comparison_raw_output,
+            raw_attempts=comparison_raw_attempts if getattr(self, "capture_raw_responses", False) else None,
         )
         self._log_comparison(
             "dual_worst", self.CHARACTERS[:len(docs)], worst, docs,
             parse_status=parse_status,
             parse_fallback_reason=parse_fallback_reason,
             raw_output=comparison_raw_output,
+            raw_attempts=comparison_raw_attempts if getattr(self, "capture_raw_responses", False) else None,
         )
 
         return best, worst
@@ -1217,6 +1270,9 @@ class DualEndSetwiseLlmRanker(SetwiseLlmRanker):
         self.total_unparseable_after_exhaustion_fallback = 0
         self.total_duplicate_label_fallback = 0
         self.total_lenient_fallback = 0
+
+        if len(ranking) <= 1:
+            return self._materialize_ranking(ranking, original_ranking)
 
         if self.method == "heapsort":
             # Use standard heapsort from parent (dual-end doesn't map cleanly to heap)
@@ -1546,7 +1602,10 @@ class MaxContextDualEndSetwiseLlmRanker(_MaxContextOrderingMixin, DualEndSetwise
     })
 
     def __init__(self, *args, pool_size: int, shuffle: bool = False, reverse: bool = False,
-                 allow_parse_failure_bm25_fallback: bool = False, **kwargs):
+                 allow_parse_failure_bm25_fallback: bool = False,
+                 output_depth: Optional[int] = None,
+                 capture_raw_responses: bool = False,
+                 **kwargs):
         self._early_reject_unsupported_family(
             kwargs.get("model_name_or_path") or (args[0] if args else None)
         )
@@ -1558,6 +1617,10 @@ class MaxContextDualEndSetwiseLlmRanker(_MaxContextOrderingMixin, DualEndSetwise
         self._assert_maxcontext_invariants(pool_size)
         _setup_maxcontext_numeric_attrs(self, pool_size)
         self._allow_parse_failure_bm25_fallback = allow_parse_failure_bm25_fallback
+        self.output_depth = pool_size if output_depth is None else output_depth
+        if not 1 <= self.output_depth <= pool_size:
+            raise ValueError("output_depth must satisfy 1 <= output_depth <= pool_size.")
+        self.capture_raw_responses = capture_raw_responses
 
     @staticmethod
     def _early_reject_unsupported_family(model_name: Optional[str]) -> None:
@@ -1601,9 +1664,9 @@ class MaxContextDualEndSetwiseLlmRanker(_MaxContextOrderingMixin, DualEndSetwise
         self._maxcontext_original_positions = {
             doc.docid: i for i, doc in enumerate(docs)
         }
-        _validate_maxcontext_pool_size(self, docs, "MaxContextDualEnd")
+        _validate_maxcontext_pool_cap(self, docs, "MaxContextDualEnd")
         if len(docs) <= 1:
-            return _materialize_maxcontext_results(docs)
+            return self._materialize_ranking(docs)
         self._assert_maxcontext_fits(query, docs)
         self.total_parse_fallback = 0
         self.total_lexical_refusal_fallback = 0
@@ -1614,7 +1677,11 @@ class MaxContextDualEndSetwiseLlmRanker(_MaxContextOrderingMixin, DualEndSetwise
         self.total_lenient_fallback = 0
         self.total_strict_parse_fallback = 0
         try:
-            return super().rerank(query, docs)
+            ranking = copy.deepcopy(docs)
+            self._double_ended_selection(ranking, query, self.output_depth)
+            self.total_selection_steps = min(self.output_depth, len(docs) // 2)
+            self.total_non_llm_bypasses = 0
+            return self._materialize_ranking(ranking, docs)
         except ValueError as exc:
             if not _maxcontext_should_fallback_to_bm25(self, exc):
                 raise
@@ -1637,13 +1704,17 @@ class MaxContextDualEndSetwiseLlmRanker(_MaxContextOrderingMixin, DualEndSetwise
             ranker=self,
             query=query,
             docs=docs,
-            reserved_output_tokens=128,
+            reserved_output_tokens=self._generation_budget("dual"),
         )
+        self.max_rendered_prompt_tokens = max(
+            getattr(self, "max_rendered_prompt_tokens", 0), rendered_length
+        )
+        self.min_context_fit_margin = limit - rendered_length
         if not ok:
             raise ValueError(
                 f"MaxContextDualEnd preflight failed: rendered prompt is "
                 f"{rendered_length} tokens but the budget is {limit} "
-                f"(max_input_tokens - reserved_output_tokens). "
+                f"(max_input_tokens - {self._generation_budget('dual')} reserved output tokens). "
                 "Reduce --passage_length or --k, or pick a Qwen3.5 variant with larger context."
             )
 
@@ -1666,6 +1737,8 @@ class MaxContextDualEndSetwiseLlmRanker(_MaxContextOrderingMixin, DualEndSetwise
             worst_label, presented, original_window, default=len(original_window) - 1
         )
         return self.CHARACTERS[best_idx], self.CHARACTERS[worst_idx]
+
+
 
 
 class SelectiveDualEndSetwiseLlmRanker(_DualEndRoutingMixin, DualEndSetwiseLlmRanker):
@@ -1781,6 +1854,10 @@ class SelectiveDualEndSetwiseLlmRanker(_DualEndRoutingMixin, DualEndSetwiseLlmRa
         self.total_retries = 0
         self.total_retry_overhead_seconds = 0.0
         self._reset_joint_signal_stats()
+
+        if len(ranking) <= 1:
+            return self._materialize_ranking(ranking, original_ranking)
+
         self._prepare_query_uncertainty_thresholds(original_ranking)
 
         if self.method == "heapsort":
@@ -1905,6 +1982,13 @@ class BiasAwareDualEndSetwiseLlmRanker(_DualEndRoutingMixin, DualEndSetwiseLlmRa
             )
 
         self._reset_joint_signal_stats()
+        if len(ranking) <= 1:
+            self.total_compare = 0
+            self.total_prompt_tokens = 0
+            self.total_completion_tokens = 0
+            self.total_retries = 0
+            self.total_retry_overhead_seconds = 0.0
+            return self._materialize_ranking(ranking)
         self._prepare_query_uncertainty_thresholds(ranking)
         return super().rerank(query, ranking)
 
@@ -1938,6 +2022,9 @@ class SameCallRegularizedSetwiseLlmRanker(_DualEndRoutingMixin, DualEndSetwiseLl
         self.total_retries = 0
         self.total_retry_overhead_seconds = 0.0
         self._reset_joint_signal_stats()
+        if len(ranking) <= 1:
+            return self._materialize_ranking(ranking, original_ranking)
+
         # Keep the current ranking head protected from the extra worst-signal
         # demotion. We protect the top-k plus one full active window because
         # candidates just beyond k can still be promoted into the final answer
@@ -2118,6 +2205,17 @@ class BidirectionalEnsembleRanker(LlmRanker):
             self.bottomup_ranker._current_qid = value
 
     def rerank(self, query: str, ranking: List[SearchResult]) -> List[SearchResult]:
+        if len(ranking) <= 1:
+            self.total_compare = 0
+            self.total_prompt_tokens = 0
+            self.total_completion_tokens = 0
+            self.total_retries = 0
+            self.total_retry_overhead_seconds = 0.0
+            return [
+                SearchResult(docid=doc.docid, score=-rank, text=None)
+                for rank, doc in enumerate(ranking, start=1)
+            ]
+
         ranking_copy1 = copy.deepcopy(ranking)
         ranking_copy2 = copy.deepcopy(ranking)
 
@@ -2219,7 +2317,10 @@ class MaxContextTopDownSetwiseLlmRanker(_MaxContextOrderingMixin, SetwiseLlmRank
     total_bm25_bypass: int = 0
 
     def __init__(self, *args, pool_size: int, shuffle: bool = False, reverse: bool = False,
-                 allow_parse_failure_bm25_fallback: bool = False, **kwargs):
+                 allow_parse_failure_bm25_fallback: bool = False,
+                 output_depth: Optional[int] = None,
+                 capture_raw_responses: bool = False,
+                 **kwargs):
         MaxContextDualEndSetwiseLlmRanker._early_reject_unsupported_family(
             kwargs.get("model_name_or_path") or (args[0] if args else None)
         )
@@ -2231,6 +2332,10 @@ class MaxContextTopDownSetwiseLlmRanker(_MaxContextOrderingMixin, SetwiseLlmRank
         self._assert_maxcontext_invariants(pool_size)
         _setup_maxcontext_numeric_attrs(self, pool_size)
         self._allow_parse_failure_bm25_fallback = allow_parse_failure_bm25_fallback
+        self.output_depth = pool_size if output_depth is None else output_depth
+        if not 1 <= self.output_depth <= pool_size:
+            raise ValueError("output_depth must satisfy 1 <= output_depth <= pool_size.")
+        self.capture_raw_responses = capture_raw_responses
 
     def _assert_maxcontext_invariants(self, pool_size: int) -> None:
         if self.config.model_type not in MAXCONTEXT_ALLOWED_MODEL_TYPES:
@@ -2274,6 +2379,8 @@ class MaxContextTopDownSetwiseLlmRanker(_MaxContextOrderingMixin, SetwiseLlmRank
         self.total_retries = 0
         self.total_retry_overhead_seconds = 0.0
         self.total_bm25_bypass = 0
+        self.total_selection_steps = 0
+        self.total_non_llm_bypasses = 0
         orig_pos = {doc.docid: i for i, doc in enumerate(docs)}
         self._maxcontext_original_positions = orig_pos
         for doc in docs:
@@ -2285,7 +2392,8 @@ class MaxContextTopDownSetwiseLlmRanker(_MaxContextOrderingMixin, SetwiseLlmRank
 
         n = len(ranking)
         top_idx = 0
-        while n - top_idx > 1:
+        while top_idx < self.output_depth and n - top_idx > 1:
+            self.total_selection_steps += 1
             window = ranking[top_idx:]
             window_len = len(window)
             if window_len == 2:
@@ -2301,6 +2409,7 @@ class MaxContextTopDownSetwiseLlmRanker(_MaxContextOrderingMixin, SetwiseLlmRank
                         else 1
                     )
                 self.total_bm25_bypass += 1
+                self.total_non_llm_bypasses += 1
             else:
                 presented = self._apply_pool_ordering(window)
                 best_label = self.compare(query, presented)
@@ -2317,12 +2426,9 @@ class MaxContextTopDownSetwiseLlmRanker(_MaxContextOrderingMixin, SetwiseLlmRank
 
     def rerank(self, query: str, docs: List[SearchResult]) -> List[SearchResult]:
         _reset_maxcontext_query_stats(self)
-        self._maxcontext_original_positions = {
-            doc.docid: i for i, doc in enumerate(docs)
-        }
-        _validate_maxcontext_pool_size(self, docs, "MaxContextTopDown")
+        _validate_maxcontext_pool_cap(self, docs, "MaxContextTopDown")
         if len(docs) <= 1:
-            return _materialize_maxcontext_results(docs)
+            return self._materialize_ranking(docs)
         self._assert_maxcontext_fits(query, docs)
         try:
             ordered = self._maxcontext_topdown_select(query, docs)
@@ -2350,7 +2456,10 @@ class MaxContextBottomUpSetwiseLlmRanker(_MaxContextOrderingMixin, BottomUpSetwi
     total_bm25_bypass: int = 0
 
     def __init__(self, *args, pool_size: int, shuffle: bool = False, reverse: bool = False,
-                 allow_parse_failure_bm25_fallback: bool = False, **kwargs):
+                 allow_parse_failure_bm25_fallback: bool = False,
+                 output_depth: Optional[int] = None,
+                 capture_raw_responses: bool = False,
+                 **kwargs):
         MaxContextDualEndSetwiseLlmRanker._early_reject_unsupported_family(
             kwargs.get("model_name_or_path") or (args[0] if args else None)
         )
@@ -2362,6 +2471,10 @@ class MaxContextBottomUpSetwiseLlmRanker(_MaxContextOrderingMixin, BottomUpSetwi
         self._assert_maxcontext_invariants(pool_size)
         _setup_maxcontext_numeric_attrs(self, pool_size)
         self._allow_parse_failure_bm25_fallback = allow_parse_failure_bm25_fallback
+        self.output_depth = pool_size if output_depth is None else output_depth
+        if self.output_depth != pool_size:
+            raise ValueError("MaxContextBottomUp currently supports full output_depth only.")
+        self.capture_raw_responses = capture_raw_responses
 
     def _assert_maxcontext_invariants(self, pool_size: int) -> None:
         if self.config.model_type not in MAXCONTEXT_ALLOWED_MODEL_TYPES:
@@ -2405,6 +2518,8 @@ class MaxContextBottomUpSetwiseLlmRanker(_MaxContextOrderingMixin, BottomUpSetwi
         self.total_retries = 0
         self.total_retry_overhead_seconds = 0.0
         self.total_bm25_bypass = 0
+        self.total_selection_steps = 0
+        self.total_non_llm_bypasses = 0
         orig_pos = {doc.docid: i for i, doc in enumerate(docs)}
         self._maxcontext_original_positions = orig_pos
         for doc in docs:
@@ -2416,6 +2531,7 @@ class MaxContextBottomUpSetwiseLlmRanker(_MaxContextOrderingMixin, BottomUpSetwi
 
         bottom_idx = len(ranking) - 1
         while bottom_idx > 0:
+            self.total_selection_steps += 1
             window = ranking[: bottom_idx + 1]
             window_len = len(window)
             if window_len == 2:
@@ -2431,6 +2547,7 @@ class MaxContextBottomUpSetwiseLlmRanker(_MaxContextOrderingMixin, BottomUpSetwi
                         else 1
                     )
                 self.total_bm25_bypass += 1
+                self.total_non_llm_bypasses += 1
             else:
                 presented = self._apply_pool_ordering(window)
                 worst_label = self.compare_worst(query, presented)
@@ -2447,12 +2564,9 @@ class MaxContextBottomUpSetwiseLlmRanker(_MaxContextOrderingMixin, BottomUpSetwi
 
     def rerank(self, query: str, docs: List[SearchResult]) -> List[SearchResult]:
         _reset_maxcontext_query_stats(self)
-        self._maxcontext_original_positions = {
-            doc.docid: i for i, doc in enumerate(docs)
-        }
-        _validate_maxcontext_pool_size(self, docs, "MaxContextBottomUp")
+        _validate_maxcontext_pool_cap(self, docs, "MaxContextBottomUp")
         if len(docs) <= 1:
-            return _materialize_maxcontext_results(docs)
+            return self._materialize_ranking(docs)
         self._assert_maxcontext_fits(query, docs)
         try:
             ordered = self._maxcontext_bottomup_select(query, docs)

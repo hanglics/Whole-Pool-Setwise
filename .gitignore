@@ -6,3 +6,6 @@ logs/
 results/
 *.log
 slurm-*.out
+
+experiments/baselines/.upstreams/
+.pytest_cache/

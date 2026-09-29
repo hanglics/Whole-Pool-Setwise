@@ -1,0 +1,6 @@
+0cbbaa58af19a222cd0980e103cb0dc9c9bcac2beb5d07a56be30cbe5ea9e599  runs/bm25/run.beir.bm25-flat.dbpedia-entity.txt
+b1a28fe9959a98dbeea39ca51e36c9754ddab511a77d648ceab601d84c333d16  runs/bm25/run.beir.bm25-flat.fiqa.txt
+cd10efd8d4991224c0bca9a0bf49fd2158e7eb3229040ff53d93ce713318f126  runs/bm25/run.beir.bm25-flat.nfcorpus.txt
+04cbcf1249e848ea915156359b49b56f6ccce781b01f3e89540eaf3b04859e19  runs/bm25/run.beir.bm25-flat.scifact.txt
+557eab684f6fcbd301254493a362116e2e2a557cd538a547397567050fccd438  runs/bm25/run.beir.bm25-flat.trec-covid.txt
+c8df6d196a8ccbd780b0bea308135339edee9d28a8a3bda6e7b87d5e7b9cba22  runs/bm25/run.beir.bm25-flat.webis-touche2020.txt

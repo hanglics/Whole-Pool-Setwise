@@ -1,12 +1,16 @@
-# Detailed TREC DL Results
+# Detailed Results
 
 [Back to the repository overview](../README.md)
 
-This page preserves the existing appendix result tables for Whole-Pool Setwise re-ranking, exported on **2026-09-29**. The 14 images are 600 dpi crops of the source PDF, including the original captions. **Table numbers 4–17 are retained for provenance.** Click any table to open its full-resolution PNG.
+Browse the paper results below. The 14 high-resolution table images retain the source table numbers and captions. Click an image for its full-resolution PNG.
 
-The snapshot covers TREC DL19/DL20 effectiveness, inference costs, repeatability, and input-order controls. It excludes later revision-baseline and BEIR results. Reported values and statistical annotations are reproduced as shown in the source snapshot; this export does not recalculate them. The [export manifest](assets/appendix-tables/manifest.json) records the source PDF hash, table labels, source pages, and crop coordinates.
+The images cover DL19/DL20 effectiveness, costs, repeatability, and input-order controls. Values and statistical annotations are preserved from the source tables; the [export manifest](assets/appendix-tables/manifest.json) records their provenance. Baseline and BEIR results are available on the linked pages.
 
 ## Contents
+
+- [TourRank, Liu, and matched top-10 comparisons](baseline-results.md).
+- [BEIR per-dataset results](beir-results.md).
+- [Reproduction commands](reproducing-paper.md).
 
 - [Aggregate effectiveness summaries](#aggregate-effectiveness-summaries): Tables 4–5.
 - [Per-model results across all pools](#per-model-results-across-all-pools): Tables 6–14, with model navigation below.

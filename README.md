@@ -2,7 +2,9 @@
 
 This repository contains the cleaned code and scripts needed to reproduce the completed TREC DL experiments for Whole-Pool Setwise re-ranking. It includes the core ranker implementation, SLURM launchers, evaluation scripts, analysis scripts, smoke tests, and the BM25 first-stage runs used for DL19 and DL20.
 
-It intentionally excludes paper drafts, planning/design notes, generated results, logs, caches, conda environments, and local cluster paths.
+**[Browse the detailed results and high-resolution appendix tables](docs/detailed-results.md)** for the existing TREC DL result summaries, per-model results, cost measurements, repeatability, and position-bias controls.
+
+It intentionally excludes paper drafts, planning/design notes, raw generated run outputs, logs, caches, conda environments, and local cluster paths. Curated appendix table images and their export manifest are included under `docs/assets/appendix-tables/`.
 
 ## Completed Experiment Scope
 

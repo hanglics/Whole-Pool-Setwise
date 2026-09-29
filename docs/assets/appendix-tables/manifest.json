@@ -1,0 +1,347 @@
+{
+  "export_date": "2026-09-29",
+  "source_pdf": "WP-Setwise.pdf",
+  "source_pdf_sha256": "da98632f8fa68976c492d12418a9643897236e0c13016d1cbd2228151916bf70",
+  "source_latex": "paper/sections/appendix.tex",
+  "source_latex_sha256": "4749e76c48bea0e8d66418b2552fc9af02c3acb9fbc5526e3e040152fb3643fb",
+  "dpi": 600,
+  "rendering": "Lossless grayscale PNG, rendered directly from the PDF with Poppler pdftoppm; captions and table rules retained.",
+  "tables": [
+    {
+      "number": 4,
+      "latex_label": "tab:pool-size-robustness-cost",
+      "source_page": 12,
+      "image": "table-04-pool-size-summary.png",
+      "width_px": 3000,
+      "height_px": 1420,
+      "crop_box_points": [
+        127.765,
+        185.4926,
+        487.5959,
+        355.732
+      ],
+      "crop_box_origin": "top-left",
+      "pixel_crop": [
+        1064,
+        1545,
+        3000,
+        1420
+      ],
+      "sha256": "6b6ad6134344d41e3cd9c141e4645650ff86b9743cd0f1eebe868fb56e3b3bde",
+      "latex_decimal_values_checked": 21,
+      "significance_arrows_match_latex": true
+    },
+    {
+      "number": 5,
+      "latex_label": "tab:wpde-noninferiority-summary",
+      "source_page": 12,
+      "image": "table-05-noninferiority-summary.png",
+      "width_px": 3000,
+      "height_px": 1105,
+      "crop_box_points": [
+        127.765,
+        387.4321,
+        487.5946,
+        519.929
+      ],
+      "crop_box_origin": "top-left",
+      "pixel_crop": [
+        1064,
+        3228,
+        3000,
+        1105
+      ],
+      "sha256": "fd2446170f15c8a42a398c42f6c6b65b99801d05ab93b553a1a44f6db2907732",
+      "latex_decimal_values_checked": 12,
+      "significance_arrows_match_latex": true
+    },
+    {
+      "number": 6,
+      "latex_label": "tab:appendix-qwen3-5-0-8b-full",
+      "source_page": 13,
+      "image": "table-06-qwen3-5-0-8b.png",
+      "width_px": 3000,
+      "height_px": 1372,
+      "crop_box_points": [
+        127.765,
+        123.3696,
+        487.5948,
+        287.8981
+      ],
+      "crop_box_origin": "top-left",
+      "pixel_crop": [
+        1064,
+        1028,
+        3000,
+        1372
+      ],
+      "sha256": "ffaff20b51a71938995c9244a2b2b193dd4ded873f307f9bb19adfb97dcfffb1",
+      "latex_decimal_values_checked": 161,
+      "significance_arrows_match_latex": true
+    },
+    {
+      "number": 7,
+      "latex_label": "tab:appendix-qwen3-5-2b-full",
+      "source_page": 13,
+      "image": "table-07-qwen3-5-2b.png",
+      "width_px": 3000,
+      "height_px": 1319,
+      "crop_box_points": [
+        127.765,
+        312.0496,
+        487.5971,
+        470.2016
+      ],
+      "crop_box_origin": "top-left",
+      "pixel_crop": [
+        1064,
+        2600,
+        3000,
+        1319
+      ],
+      "sha256": "dd3c069786be271d3ce997e9903bfbb2b1c3463f8fcc110a190a116e3ba5cead",
+      "latex_decimal_values_checked": 161,
+      "significance_arrows_match_latex": true
+    },
+    {
+      "number": 8,
+      "latex_label": "tab:appendix-qwen3-5-4b-full",
+      "source_page": 13,
+      "image": "table-08-qwen3-5-4b.png",
+      "width_px": 3000,
+      "height_px": 1334,
+      "crop_box_points": [
+        127.765,
+        494.3666,
+        487.5968,
+        654.256
+      ],
+      "crop_box_origin": "top-left",
+      "pixel_crop": [
+        1064,
+        4119,
+        3000,
+        1334
+      ],
+      "sha256": "2fdacf59d2c73dd27ef0430a885149431302d617a18cd47939a39b0787e0c3c1",
+      "latex_decimal_values_checked": 161,
+      "significance_arrows_match_latex": true
+    },
+    {
+      "number": 9,
+      "latex_label": "tab:appendix-qwen3-5-9b-full",
+      "source_page": 14,
+      "image": "table-09-qwen3-5-9b.png",
+      "width_px": 3000,
+      "height_px": 1313,
+      "crop_box_points": [
+        127.765,
+        120.7146,
+        487.5952,
+        278.103
+      ],
+      "crop_box_origin": "top-left",
+      "pixel_crop": [
+        1064,
+        1005,
+        3000,
+        1313
+      ],
+      "sha256": "e10dae31d12f6fe901d4b44f87940628922bdfefda35845406669cfacd35d1e5",
+      "latex_decimal_values_checked": 161,
+      "significance_arrows_match_latex": true
+    },
+    {
+      "number": 10,
+      "latex_label": "tab:appendix-qwen3-5-27b-full",
+      "source_page": 14,
+      "image": "table-10-qwen3-5-27b.png",
+      "width_px": 3000,
+      "height_px": 1444,
+      "crop_box_points": [
+        127.765,
+        296.9566,
+        487.5963,
+        470.1532
+      ],
+      "crop_box_origin": "top-left",
+      "pixel_crop": [
+        1064,
+        2474,
+        3000,
+        1444
+      ],
+      "sha256": "9799bcdf185b4346ea7aa4bc2ab822539cac31f041465a73f6ecf608f4bcd32a",
+      "latex_decimal_values_checked": 161,
+      "significance_arrows_match_latex": true
+    },
+    {
+      "number": 11,
+      "latex_label": "tab:appendix-llama3-1-8b-full",
+      "source_page": 14,
+      "image": "table-11-llama3-1-8b.png",
+      "width_px": 3000,
+      "height_px": 1400,
+      "crop_box_points": [
+        127.765,
+        489.0206,
+        487.5996,
+        656.9196
+      ],
+      "crop_box_origin": "top-left",
+      "pixel_crop": [
+        1064,
+        4075,
+        3000,
+        1400
+      ],
+      "sha256": "8d65d4589372de733a0a8a30990e3b30e669e88715eeadcd47eff6214b4e9c3d",
+      "latex_decimal_values_checked": 161,
+      "significance_arrows_match_latex": true
+    },
+    {
+      "number": 12,
+      "latex_label": "tab:appendix-ministral3-3b-full",
+      "source_page": 15,
+      "image": "table-12-ministral3-3b.png",
+      "width_px": 3000,
+      "height_px": 1439,
+      "crop_box_points": [
+        127.765,
+        119.1096,
+        487.5992,
+        291.6294
+      ],
+      "crop_box_origin": "top-left",
+      "pixel_crop": [
+        1064,
+        992,
+        3000,
+        1439
+      ],
+      "sha256": "9a312ccd8ffbb0434631f67dd4c15e6dae4ba797f3e7f97f27d69253b4ec5c62",
+      "latex_decimal_values_checked": 161,
+      "significance_arrows_match_latex": true
+    },
+    {
+      "number": 13,
+      "latex_label": "tab:appendix-ministral3-8b-full",
+      "source_page": 15,
+      "image": "table-13-ministral3-8b.png",
+      "width_px": 3000,
+      "height_px": 1413,
+      "crop_box_points": [
+        127.765,
+        307.2866,
+        487.5959,
+        476.7081
+      ],
+      "crop_box_origin": "top-left",
+      "pixel_crop": [
+        1064,
+        2560,
+        3000,
+        1413
+      ],
+      "sha256": "2832906bed3d51b51789383fc83930d3058a731985ab29eb7af80aafa485b6fa",
+      "latex_decimal_values_checked": 161,
+      "significance_arrows_match_latex": true
+    },
+    {
+      "number": 14,
+      "latex_label": "tab:appendix-ministral3-14b-full",
+      "source_page": 15,
+      "image": "table-14-ministral3-14b.png",
+      "width_px": 3000,
+      "height_px": 1386,
+      "crop_box_points": [
+        127.765,
+        492.3546,
+        487.6024,
+        658.5303
+      ],
+      "crop_box_origin": "top-left",
+      "pixel_crop": [
+        1064,
+        4102,
+        3000,
+        1386
+      ],
+      "sha256": "cd07b2af4e71e8c111512cb0028b765fa5c1122b739a4d68aa0b05b33aadf36b",
+      "latex_decimal_values_checked": 161,
+      "significance_arrows_match_latex": true
+    },
+    {
+      "number": 15,
+      "latex_label": "tab:appendix-pool100-cost-diagnostics",
+      "source_page": 16,
+      "image": "table-15-cost-parser-diagnostics.png",
+      "width_px": 3000,
+      "height_px": 1485,
+      "crop_box_points": [
+        127.765,
+        107.9206,
+        487.597,
+        285.9973
+      ],
+      "crop_box_origin": "top-left",
+      "pixel_crop": [
+        1064,
+        899,
+        3000,
+        1485
+      ],
+      "sha256": "235fdeef83ea91450792be6c616962cb664a31071d5d1fea87e984c74fddc4a6",
+      "latex_decimal_values_checked": 42,
+      "significance_arrows_match_latex": true
+    },
+    {
+      "number": 16,
+      "latex_label": "tab:appendix-phase-c-stability",
+      "source_page": 16,
+      "image": "table-16-repeatability.png",
+      "width_px": 3000,
+      "height_px": 1259,
+      "crop_box_points": [
+        127.765,
+        283.6656,
+        487.6012,
+        434.5976
+      ],
+      "crop_box_origin": "top-left",
+      "pixel_crop": [
+        1064,
+        2363,
+        3000,
+        1259
+      ],
+      "sha256": "496651f62653a7a0f5e91d688c8a8040518a3c935df386e79e7adc833ed5c2ee",
+      "latex_decimal_values_checked": 69,
+      "significance_arrows_match_latex": true
+    },
+    {
+      "number": 17,
+      "latex_label": "tab:appendix-phase-f-position-bias",
+      "source_page": 17,
+      "image": "table-17-position-bias.png",
+      "width_px": 3000,
+      "height_px": 1963,
+      "crop_box_points": [
+        127.765,
+        107.9206,
+        487.623,
+        343.427
+      ],
+      "crop_box_origin": "top-left",
+      "pixel_crop": [
+        1064,
+        899,
+        3000,
+        1963
+      ],
+      "sha256": "af622324aef9fd65d4c9153456418416074c11d0043d8cf8f011cc1369f3e474",
+      "latex_decimal_values_checked": 51,
+      "significance_arrows_match_latex": true
+    }
+  ]
+}
